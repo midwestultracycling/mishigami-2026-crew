@@ -155,6 +155,10 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .btn-pick.active{background:#4D94BF;color:#051829}
 .btn-pick:hover:not(.active){background:rgba(77,148,191,.1)}
 #pick-hint{font-size:10px;color:#4D94BF;letter-spacing:.5px;min-height:14px}
+#pick-banner{display:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#040e19;border:1px solid #4D94BF;color:#4D94BF;padding:10px 20px;font-size:11px;letter-spacing:1px;border-radius:4px;z-index:3000;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.6)}
+#pick-banner.active{display:block}
+#pick-banner kbd{background:#4D94BF;color:#051829;padding:1px 5px;border-radius:2px;font-size:10px;font-family:"Arial Narrow",Arial,sans-serif;margin-left:8px;cursor:pointer}
+.field-paste input{width:100%;font-size:11px}
 #modal-footer{padding:12px 16px;border-top:1px solid #0d2236;display:flex;gap:8px;justify-content:flex-end}
 .btn-cancel{padding:6px 16px;border:1px solid #1a3550;background:transparent;color:#7899b0;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;border-radius:3px;cursor:pointer}
 .btn-cancel:hover{border-color:#2a4560;color:#FFFBF8}
@@ -256,6 +260,8 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 </div>
 
 <!-- ADD LOCATION MODAL -->
+<div id="pick-banner">Click anywhere on the map to set coordinates <kbd onclick="togglePickMode()">Cancel</kbd></div>
+
 <div id="modal-overlay">
   <div id="modal">
     <div id="modal-header">
@@ -303,7 +309,10 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
       </div>
       <div class="field">
         <label>Coordinates *</label>
-        <div class="coords-row">
+        <div class="field-paste">
+          <input type="text" id="f-coords-paste" placeholder='Paste from Google Maps — e.g. "41.8781, -87.6298"' oninput="parseCoordsString(this.value)">
+        </div>
+        <div class="coords-row" style="margin-top:6px">
           <div class="field">
             <input type="number" id="f-lat" placeholder="Latitude" step="any">
           </div>
@@ -525,7 +534,9 @@ function initMap() {
     if (!pickMode) return;
     document.getElementById('f-lat').value = e.latlng.lat.toFixed(6);
     document.getElementById('f-lng').value = e.latlng.lng.toFixed(6);
-    document.getElementById('pick-hint').textContent = 'Coordinates set — click again to adjust or press Add Location.';
+    document.getElementById('f-coords-paste').value = '';
+    togglePickMode(); // exits pick mode and restores modal
+    document.getElementById('pick-hint').textContent = 'Coordinates set. Adjust if needed.';
   });
 
   // Load built-in shots
@@ -833,6 +844,7 @@ function openModal() {
   document.getElementById('f-notes').value = '';
   document.getElementById('f-lat').value = '';
   document.getElementById('f-lng').value = '';
+  document.getElementById('f-coords-paste').value = '';
   document.getElementById('f-race-main').checked = true;
   document.getElementById('f-race-mini').checked = false;
   document.querySelector('input[name="f-priority"][value="standard"]').checked = true;
@@ -849,14 +861,33 @@ function closeModal() {
 function togglePickMode() {
   pickMode = !pickMode;
   const btn = document.getElementById('btn-pick');
-  const hint = document.getElementById('pick-hint');
-  btn.classList.toggle('active', pickMode);
+  const banner = document.getElementById('pick-banner');
+  const overlay = document.getElementById('modal-overlay');
+
   if (pickMode) {
-    hint.textContent = 'Click anywhere on the map to set coordinates.';
+    // Hide modal, show banner so the map is clickable
+    overlay.classList.remove('open');
+    banner.classList.add('active');
     map.getContainer().style.cursor = 'crosshair';
+    btn.classList.add('active');
   } else {
-    hint.textContent = '';
+    // Restore modal, hide banner
+    banner.classList.remove('active');
+    overlay.classList.add('open');
     map.getContainer().style.cursor = '';
+    btn.classList.remove('active');
+  }
+}
+
+function parseCoordsString(val) {
+  // Parses "41.8781, -87.6298" or "41.8781,-87.6298" from Google Maps copy
+  const match = val.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
+  if (match) {
+    document.getElementById('f-lat').value = parseFloat(match[1]).toFixed(6);
+    document.getElementById('f-lng').value = parseFloat(match[2]).toFixed(6);
+    document.getElementById('pick-hint').textContent = 'Coordinates parsed.';
+  } else {
+    document.getElementById('pick-hint').textContent = '';
   }
 }
 
