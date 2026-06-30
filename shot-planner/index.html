@@ -7,26 +7,51 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
+/* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-family:"Arial Narrow",Arial,sans-serif}
 #app{display:flex;flex-direction:column;height:100vh}
-/* HEADER */
-#header{background:#030f1a;border-bottom:1px solid #1a3550;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-shrink:0;flex-wrap:wrap}
-#header .logo{font-size:13px;font-weight:700;letter-spacing:2px;color:#FFFBF8;opacity:.85;white-space:nowrap}
-#header .logo span{color:#F49A0B;letter-spacing:1px}
+
+/* ── Brand color tokens ── */
+:root{
+  --navy:#051829;
+  --navy-2:#040e19;
+  --navy-3:#071828;
+  --border:#0d2236;
+  --border-2:#1a3550;
+  --text:#FFFBF8;
+  --muted:#7899b0;
+  --dim:#3a5570;
+  --amber:#F49A0B;
+  --blue:#4D94BF;
+  --maroon:#A06868;
+  --cream:#FFFBF8;
+}
+
+/* ── HEADER ── */
+#header{background:#030f1a;border-bottom:1px solid #1a3550;padding:8px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
+.back-link{font-size:10px;font-weight:700;letter-spacing:1px;color:#3a5570;text-transform:uppercase;text-decoration:none;border:1px solid #1a3550;padding:4px 9px;border-radius:3px;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.back-link:hover{border-color:#4D94BF;color:#4D94BF}
+.back-arrow{font-style:normal;font-size:12px}
+.logo{font-size:13px;font-weight:700;letter-spacing:2px;color:#FFFBF8;opacity:.85;white-space:nowrap}
+.logo span{color:#F49A0B;letter-spacing:1px}
 .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ctrl-label{font-size:10px;letter-spacing:1px;color:#7899b0;text-transform:uppercase;margin-right:2px}
 .btn-group{display:flex;gap:4px}
 .btn{padding:4px 10px;border-radius:3px;border:1px solid #1a3550;background:transparent;color:#7899b0;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;letter-spacing:.5px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.btn.active{border-color:#F49A0B;color:#F49A0B;background:rgba(244,154,11,.08)}
+.btn.active{border-color:#4D94BF;color:#4D94BF;background:rgba(77,148,191,.1)}
 .btn:hover:not(.active){border-color:#2a4560;color:#FFFBF8}
-.btn.crew-jack.active{border-color:#F49A0B;color:#F49A0B;background:rgba(244,154,11,.12)}
-.btn.crew-cody.active{border-color:#4FC3F7;color:#4FC3F7;background:rgba(79,195,247,.12)}
-.btn.crew-aaron.active{border-color:#81C784;color:#81C784;background:rgba(129,199,132,.12)}
-.stats{margin-left:auto;font-size:10px;color:#3a5570;letter-spacing:.5px;white-space:nowrap}
-/* BODY SPLIT */
-#content{display:flex;flex:1;overflow:hidden}
-/* SIDEBAR */
+.btn.crew-jack.active{border-color:#FFFBF8;color:#FFFBF8;background:rgba(255,251,248,.1)}
+.btn.crew-cody.active{border-color:#4D94BF;color:#4D94BF;background:rgba(77,148,191,.12)}
+.btn.crew-aaron.active{border-color:#A06868;color:#A06868;background:rgba(160,104,104,.12)}
+.btn-add{border-color:#4D94BF;color:#4D94BF;margin-left:auto}
+.btn-add:hover{background:rgba(77,148,191,.1);color:#FFFBF8}
+.stats{font-size:10px;color:#3a5570;letter-spacing:.5px;white-space:nowrap}
+
+/* ── BODY SPLIT ── */
+#content{display:flex;flex:1;overflow:hidden;position:relative}
+
+/* ── SIDEBAR ── */
 #sidebar{width:300px;flex-shrink:0;background:#040e19;border-right:1px solid #0d2236;display:flex;flex-direction:column;overflow:hidden}
 #sidebar-header{padding:10px 12px 8px;border-bottom:1px solid #0d2236;font-size:10px;letter-spacing:1.5px;color:#3a5570;text-transform:uppercase}
 #shot-list{flex:1;overflow-y:auto;scroll-behavior:smooth}
@@ -36,28 +61,44 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .section-header{padding:8px 12px 4px;font-size:9.5px;letter-spacing:1.5px;color:#2a4560;text-transform:uppercase;border-bottom:1px solid #071624;position:sticky;top:0;background:#040e19;z-index:1}
 .shot-item{padding:8px 12px;border-bottom:1px solid #071624;cursor:pointer;transition:background .12s;display:flex;align-items:flex-start;gap:8px}
 .shot-item:hover{background:#071828}
-.shot-item.active{background:#0a2035;border-left:2px solid #F49A0B}
+.shot-item.active{background:#0a2035;border-left:2px solid #4D94BF}
 .shot-item.hidden{display:none}
-.shot-icon{flex-shrink:0;margin-top:1px;font-size:13px;line-height:1}
+.shot-prio{flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;width:14px}
 .shot-info{flex:1;min-width:0}
 .shot-name{font-size:11px;font-weight:700;color:#FFFBF8;line-height:1.3;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .shot-meta{font-size:10px;color:#3a5570;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+
+/* race badges */
 .shot-race-badge{padding:1px 5px;border-radius:2px;font-size:9px;letter-spacing:.5px;font-weight:700}
-.badge-main{background:rgba(244,154,11,.15);color:#F49A0B}
-.badge-mini{background:rgba(79,195,247,.15);color:#4FC3F7}
+.badge-main{background:rgba(77,148,191,.18);color:#4D94BF}
+.badge-mini{background:rgba(160,104,104,.18);color:#A06868}
+.badge-user{background:rgba(255,251,248,.1);color:#FFFBF8}
+
 .shot-crew-dots{display:flex;gap:3px;margin-top:3px}
 .crew-dot{width:6px;height:6px;border-radius:50%;opacity:.85}
-.dot-jack{background:#F49A0B}
-.dot-cody{background:#4FC3F7}
-.dot-aaron{background:#81C784}
-/* MAP */
+.dot-jack{background:#FFFBF8}
+.dot-cody{background:#4D94BF}
+.dot-aaron{background:#A06868}
+
+/* priority indicators (no emoji) */
+.prio-diamond{display:inline-block;width:8px;height:8px;background:#F49A0B;transform:rotate(45deg);flex-shrink:0}
+.prio-diamond-sm{display:inline-block;width:5px;height:5px;background:#4D94BF;transform:rotate(45deg);flex-shrink:0}
+.prio-dot{display:inline-block;width:5px;height:5px;background:#2a4560;border-radius:50%;flex-shrink:0}
+.prio-iconic-label{font-size:9px;font-weight:700;letter-spacing:.8px;color:#F49A0B;text-transform:uppercase}
+.prio-high-label{font-size:9px;font-weight:700;letter-spacing:.8px;color:#4D94BF;text-transform:uppercase}
+
+/* user-added shot indicator */
+.user-badge{font-size:9px;letter-spacing:.5px;color:#FFFBF8;opacity:.5;font-style:italic}
+
+/* ── MAP ── */
 #map{flex:1;background:#030e1a}
-/* DETAIL PANEL */
+
+/* ── DETAIL PANEL ── */
 #detail{position:absolute;bottom:0;right:0;width:340px;max-height:60vh;background:#040e19;border-left:1px solid #0d2236;border-top:1px solid #0d2236;z-index:1000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .25s;pointer-events:none}
 #detail.open{transform:translateY(0);pointer-events:all}
 #detail-header{padding:10px 12px;border-bottom:1px solid #0d2236;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-shrink:0}
 #detail-title{font-size:13px;font-weight:700;color:#FFFBF8;line-height:1.3}
-#detail-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+#detail-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;align-items:center}
 #detail-close{background:none;border:none;color:#3a5570;cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0;line-height:1}
 #detail-close:hover{color:#FFFBF8}
 #detail-body{overflow-y:auto;flex:1}
@@ -69,35 +110,74 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .detail-note{font-size:11px;color:#7899b0;line-height:1.5;font-style:italic}
 .detail-meta{display:flex;gap:12px;flex-wrap:wrap}
 .detail-meta-item{font-size:11px;color:#5a7890}
-.detail-meta-item strong{color:#F49A0B;font-weight:700}
-/* CREW ASSIGNMENT */
+.detail-meta-item strong{color:#4D94BF;font-weight:700}
+
+/* ── CREW ASSIGNMENT ── */
 .crew-section{padding:10px 12px}
 .crew-label{font-size:9.5px;letter-spacing:1.2px;color:#3a5570;text-transform:uppercase;margin-bottom:8px}
 .crew-buttons{display:flex;gap:8px}
-.crew-btn{padding:5px 14px;border-radius:3px;border:1px solid #1a3550;background:transparent;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .15s;flex:1;text-align:center}
-.crew-btn-jack{color:#7899b0;border-color:#1a3550}
-.crew-btn-jack.on{color:#F49A0B;border-color:#F49A0B;background:rgba(244,154,11,.12)}
-.crew-btn-cody{color:#7899b0;border-color:#1a3550}
-.crew-btn-cody.on{color:#4FC3F7;border-color:#4FC3F7;background:rgba(79,195,247,.12)}
-.crew-btn-aaron{color:#7899b0;border-color:#1a3550}
-.crew-btn-aaron.on{color:#81C784;border-color:#81C784;background:rgba(129,199,132,.12)}
-/* PRIORITY BADGE */
-.prio-iconic{color:#FFD54F;font-size:10px;font-weight:700;letter-spacing:.5px}
-.prio-high{color:#F49A0B;font-size:10px;font-weight:700;letter-spacing:.5px}
-/* Leaflet overrides */
+.crew-btn{padding:5px 14px;border-radius:3px;border:1px solid #1a3550;background:transparent;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .15s;flex:1;text-align:center;color:#7899b0}
+.crew-btn-jack.on{color:#FFFBF8;border-color:#FFFBF8;background:rgba(255,251,248,.1)}
+.crew-btn-cody.on{color:#4D94BF;border-color:#4D94BF;background:rgba(77,148,191,.12)}
+.crew-btn-aaron.on{color:#A06868;border-color:#A06868;background:rgba(160,104,104,.12)}
+
+/* ── SYNC STATUS ── */
+#sync-status{font-size:9px;letter-spacing:.5px;color:#2a4560;padding:4px 12px;border-bottom:1px solid #071624;min-height:18px}
+#sync-status.syncing{color:#4D94BF}
+#sync-status.ok{color:#5a8a5a}
+#sync-status.err{color:#A06868}
+
+/* ── ADD POI MODAL ── */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(3,14,26,.85);z-index:2000;align-items:center;justify-content:center}
+#modal-overlay.open{display:flex}
+#modal{background:#040e19;border:1px solid #1a3550;border-radius:4px;width:420px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+#modal-header{padding:14px 16px;border-bottom:1px solid #0d2236;display:flex;align-items:center;justify-content:space-between}
+#modal-title{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#FFFBF8}
+#modal-close{background:none;border:none;color:#3a5570;font-size:18px;cursor:pointer;line-height:1}
+#modal-close:hover{color:#FFFBF8}
+#modal-body{overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+#modal-body::-webkit-scrollbar{width:3px}
+#modal-body::-webkit-scrollbar-thumb{background:#1a3550}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:9.5px;letter-spacing:1.2px;color:#3a5570;text-transform:uppercase}
+.field input,.field textarea,.field select{background:#030e1a;border:1px solid #1a3550;border-radius:3px;color:#FFFBF8;font-family:"Arial Narrow",Arial,sans-serif;font-size:12px;padding:6px 8px;outline:none;transition:border-color .15s;resize:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#4D94BF}
+.field select option{background:#040e19}
+.field textarea{min-height:60px}
+.field-row{display:flex;gap:12px}
+.field-row .field{flex:1}
+.radio-group,.check-group{display:flex;gap:8px;flex-wrap:wrap}
+.radio-group label,.check-group label{display:flex;align-items:center;gap:5px;font-size:11px;color:#7899b0;cursor:pointer;letter-spacing:.3px}
+.radio-group input,.check-group input{accent-color:#4D94BF}
+.coords-row{display:flex;gap:8px;align-items:flex-end}
+.coords-row .field{flex:1}
+.btn-pick{padding:6px 10px;border:1px solid #4D94BF;background:transparent;color:#4D94BF;font-size:10px;font-family:"Arial Narrow",Arial,sans-serif;letter-spacing:.5px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.btn-pick.active{background:#4D94BF;color:#051829}
+.btn-pick:hover:not(.active){background:rgba(77,148,191,.1)}
+#pick-hint{font-size:10px;color:#4D94BF;letter-spacing:.5px;min-height:14px}
+#modal-footer{padding:12px 16px;border-top:1px solid #0d2236;display:flex;gap:8px;justify-content:flex-end}
+.btn-cancel{padding:6px 16px;border:1px solid #1a3550;background:transparent;color:#7899b0;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;border-radius:3px;cursor:pointer}
+.btn-cancel:hover{border-color:#2a4560;color:#FFFBF8}
+.btn-submit{padding:6px 16px;border:1px solid #4D94BF;background:#4D94BF;color:#051829;font-size:11px;font-family:"Arial Narrow",Arial,sans-serif;font-weight:700;border-radius:3px;cursor:pointer;letter-spacing:.5px}
+.btn-submit:hover{background:#5aabcf}
+
+/* ── Leaflet overrides ── */
 .leaflet-popup-content-wrapper{background:#040e19;border:1px solid #1a3550;color:#FFFBF8;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .leaflet-popup-tip{background:#040e19}
 .leaflet-popup-content{margin:8px 12px;font-family:"Arial Narrow",Arial,sans-serif;font-size:12px}
 .leaflet-control-zoom a{background:#040e19;color:#7899b0;border-color:#1a3550}
-.leaflet-control-zoom a:hover{background:#071624;color:#F49A0B}
+.leaflet-control-zoom a:hover{background:#071624;color:#4D94BF}
 .leaflet-control-attribution{background:rgba(3,14,26,.8);color:#2a4560;font-size:9px}
 .leaflet-control-attribution a{color:#3a5570}
 </style>
 </head>
 <body>
 <div id="app">
+
 <div id="header">
+  <a class="back-link" href="../index.html"><i class="back-arrow">&#8592;</i> Crew Hub</a>
   <div class="logo">MISHIGAMI 2026 &nbsp;<span>/ SHOT PLANNER</span></div>
+
   <div class="controls">
     <span class="ctrl-label">Race</span>
     <div class="btn-group">
@@ -106,14 +186,16 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
       <button class="btn" id="btn-mini" onclick="setRaceFilter('mini')">Mini-Gami</button>
     </div>
   </div>
+
   <div class="controls">
     <span class="ctrl-label">Priority</span>
     <div class="btn-group">
       <button class="btn active" id="btn-pall" onclick="setPriorityFilter('all')">All</button>
-      <button class="btn" id="btn-picomic" onclick="setPriorityFilter('iconic')">⭐ Iconic</button>
+      <button class="btn" id="btn-picomic" onclick="setPriorityFilter('iconic')">Iconic</button>
       <button class="btn" id="btn-phigh" onclick="setPriorityFilter('high')">High</button>
     </div>
   </div>
+
   <div class="controls">
     <span class="ctrl-label">Crew</span>
     <div class="btn-group">
@@ -122,21 +204,27 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
       <button class="btn crew-aaron" id="btn-aaron" onclick="toggleCrewFilter('aaron')">Aaron</button>
     </div>
   </div>
+
+  <button class="btn btn-add" onclick="openModal()">+ Add Location</button>
   <div class="stats" id="stats-text">Loading...</div>
 </div>
-<div id="content" style="position:relative">
+
+<div id="content">
   <div id="sidebar">
     <div id="sidebar-header">Shot Locations</div>
+    <div id="sync-status" id="sync-status"></div>
     <div id="shot-list"></div>
   </div>
+
   <div id="map"></div>
+
   <div id="detail">
     <div id="detail-header">
       <div>
         <div id="detail-title">Shot Name</div>
         <div id="detail-badges"></div>
       </div>
-      <button id="detail-close" onclick="closeDetail()">✕</button>
+      <button id="detail-close" onclick="closeDetail()">&#x2715;</button>
     </div>
     <div id="detail-body">
       <div class="detail-section">
@@ -166,9 +254,107 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
     </div>
   </div>
 </div>
+
+<!-- ADD LOCATION MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div id="modal-header">
+      <span id="modal-title">Add Location</span>
+      <button id="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div id="modal-body">
+      <div class="field">
+        <label>Name *</label>
+        <input type="text" id="f-name" placeholder="e.g. Kenosha Lighthouse North Pier">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Section</label>
+          <select id="f-section">
+            <option value="Chicago Start">Chicago Start</option>
+            <option value="North Shore">North Shore</option>
+            <option value="Wisconsin Coast">Wisconsin Coast</option>
+            <option value="Upper Peninsula">Upper Peninsula</option>
+            <option value="Mackinac Bridge">Mackinac Bridge</option>
+            <option value="N. Lower Peninsula">N. Lower Peninsula</option>
+            <option value="Sleeping Bear">Sleeping Bear</option>
+            <option value="Mid-Michigan Coast">Mid-Michigan Coast</option>
+            <option value="Indiana">Indiana</option>
+            <option value="Chicago Return">Chicago Return</option>
+            <option value="SS Badger Ferry">SS Badger Ferry</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <div class="radio-group" style="margin-top:6px">
+            <label><input type="radio" name="f-priority" value="standard" checked> Standard</label>
+            <label><input type="radio" name="f-priority" value="high"> High</label>
+            <label><input type="radio" name="f-priority" value="iconic"> Iconic</label>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Race</label>
+        <div class="check-group" style="margin-top:6px">
+          <label><input type="checkbox" id="f-race-main" checked> Main Event</label>
+          <label><input type="checkbox" id="f-race-mini"> Mini-Gami</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Coordinates *</label>
+        <div class="coords-row">
+          <div class="field">
+            <input type="number" id="f-lat" placeholder="Latitude" step="any">
+          </div>
+          <div class="field">
+            <input type="number" id="f-lng" placeholder="Longitude" step="any">
+          </div>
+          <button class="btn-pick" id="btn-pick" onclick="togglePickMode()">Pick on map</button>
+        </div>
+        <div id="pick-hint"></div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="What makes this location worth shooting?"></textarea>
+      </div>
+      <div class="field">
+        <label>Notes &amp; Access</label>
+        <textarea id="f-notes" placeholder="Parking, access, timing notes..."></textarea>
+      </div>
+      <div class="field">
+        <label>Added by</label>
+        <div class="radio-group" style="margin-top:6px">
+          <label><input type="radio" name="f-added-by" value="jack" checked> Jack</label>
+          <label><input type="radio" name="f-added-by" value="cody"> Cody</label>
+          <label><input type="radio" name="f-added-by" value="aaron"> Aaron</label>
+        </div>
+      </div>
+    </div>
+    <div id="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitPOI()">Add Location</button>
+    </div>
+  </div>
 </div>
+
+</div><!-- #app -->
 <script>
-// ─── ROUTE DATA ────────────────────────────────────────────────
+// =========================================================
+// JSONBIN CONFIG
+// =========================================================
+// Shared POIs sync via JSONBin.io (free). Setup:
+// 1. Create a free account at https://jsonbin.io
+// 2. Dashboard → API Keys → copy your Master Key
+// 3. Paste it as JSONBIN_KEY below
+// 4. Create a new bin with content: {"userShots":[]}
+//    (Dashboard → Bins → Create Bin)
+// 5. Copy the Bin ID and paste as JSONBIN_BIN_ID below
+// 6. All three crew members will share the same POIs
+const JSONBIN_KEY    = '$2a$10$6nYU7Ll1VIKbAPTwEdw9XuYW/Vgy6AKXYQJmbYsPWYkPMgd6wt616';
+const JSONBIN_BIN_ID = '6a43be2ff5f4af5e29477aaa';
+// =========================================================
+
 const MAIN_ROUTE = [[41.88562,-87.65091],[41.88511,-87.64131],[41.88061,-87.6379],[41.88073,-87.6289],[41.88089,-87.62038],[41.88266,-87.61512],[41.88605,-87.61329],[41.88906,-87.61384],[41.89241,-87.61366],[41.89879,-87.61781],[41.90198,-87.62273],[41.90897,-87.62536],[41.9125,-87.62528],[41.91518,-87.62711],[41.91888,-87.62886],[41.92394,-87.63023],[41.928,-87.63089],[41.93353,-87.63165],[41.93782,-87.63469],[41.94237,-87.6391],[41.94636,-87.64138],[41.95208,-87.64397],[41.95642,-87.64478],[41.9594,-87.64567],[41.96275,-87.64392],[41.96508,-87.6462],[41.96821,-87.64717],[41.97051,-87.6475],[41.97522,-87.64904],[41.98015,-87.65153],[41.98524,-87.65268],[41.98737,-87.65435],[41.99802,-87.6654],[42.01335,-87.66806],[42.02324,-87.66529],[42.03389,-87.67403],[42.05021,-87.67442],[42.06029,-87.6771],[42.07028,-87.68276],[42.07643,-87.68673],[42.08285,-87.69711],[42.08594,-87.6991],[42.08896,-87.70307],[42.09443,-87.71253],[42.09604,-87.71428],[42.09795,-87.71637],[42.10583,-87.72494],[42.1155,-87.7341],[42.12014,-87.74256],[42.13048,-87.75086],[42.13921,-87.75493],[42.14421,-87.75921],[42.15228,-87.76277],[42.15958,-87.76857],[42.16436,-87.77261],[42.17088,-87.77427],[42.17674,-87.78231],[42.17928,-87.78905],[42.18442,-87.79769],[42.19747,-87.79756],[42.20559,-87.80365],[42.21022,-87.80594],[42.21817,-87.80822],[42.21839,-87.81759],[42.21883,-87.82157],[42.22286,-87.82478],[42.2321,-87.83162],[42.24027,-87.8357],[42.25036,-87.83879],[42.25779,-87.8411],[42.27587,-87.84623],[42.28358,-87.84644],[42.30227,-87.84633],[42.3126,-87.84559],[42.31534,-87.84473],[42.3219,-87.84675],[42.32729,-87.84665],[42.33401,-87.84655],[42.34049,-87.84643],[42.35075,-87.84626],[42.35853,-87.8462],[42.36569,-87.84605],[42.37405,-87.84595],[42.38644,-87.84575],[42.39507,-87.84563],[42.4122,-87.84541],[42.43539,-87.84554],[42.44549,-87.84547],[42.45908,-87.84531],[42.4791,-87.84512],[42.49523,-87.84498],[42.50747,-87.83361],[42.51004,-87.80978],[42.53127,-87.81393],[42.54189,-87.81469],[42.54788,-87.81328],[42.55115,-87.81826],[42.56239,-87.81321],[42.57968,-87.81617],[42.59265,-87.82044],[42.60619,-87.83708],[42.6321,-87.83613],[42.64809,-87.82987],[42.67107,-87.82104],[42.68974,-87.81632],[42.69864,-87.81621],[42.71071,-87.8163],[42.71874,-87.80896],[42.7234,-87.80681],[42.72866,-87.80513],[42.7307,-87.80475],[42.73208,-87.80503],[42.73139,-87.80933],[42.73988,-87.8095],[42.74344,-87.80669],[42.76043,-87.80256],[42.77699,-87.80827],[42.79097,-87.81511],[42.79694,-87.81803],[42.81342,-87.82859],[42.81383,-87.86403],[42.84401,-87.87579],[42.86051,-87.88387],[42.88065,-87.89252],[42.88624,-87.89663],[42.8907,-87.89871],[42.89496,-87.90068],[42.90222,-87.89211],[42.90483,-87.88994],[42.90612,-87.88682],[42.90581,-87.87955],[42.90804,-87.87457],[42.91404,-87.87308],[42.92379,-87.87152],[42.92338,-87.86341],[42.92237,-87.85682],[42.92605,-87.84985],[42.93098,-87.84922],[42.93491,-87.84833],[42.93861,-87.84732],[42.94188,-87.84645],[42.9445,-87.84443],[42.94871,-87.84606],[42.95448,-87.84689],[42.95828,-87.84658],[42.96211,-87.84685],[42.9657,-87.84889],[42.9752,-87.85639],[42.98161,-87.8633],[42.98633,-87.86879],[42.99368,-87.88047],[43.00026,-87.88762],[43.0038,-87.89577],[43.00854,-87.90848],[43.02134,-87.90772],[43.03038,-87.90628],[43.02629,-87.8965],[43.03153,-87.89555],[43.03606,-87.89701],[43.03766,-87.89675],[43.04701,-87.89436],[43.05483,-87.88671],[43.06104,-87.88945],[43.06855,-87.89144],[43.08209,-87.89081],[43.09137,-87.89718],[43.10396,-87.90903],[43.11487,-87.92533],[43.12411,-87.93916],[43.13952,-87.95059],[43.161465,-87.960073],[43.17082,-87.96383],[43.1759,-87.96614],[43.17844,-87.96705],[43.19078,-87.97282],[43.21234,-87.98213],[43.22533,-87.98641],[43.23835,-87.98666],[43.25391,-87.99182],[43.26037,-87.99363],[43.28061,-87.99013],[43.29824,-87.98981],[43.30495,-87.97548],[43.31995,-87.96487],[43.33268,-87.94814],[43.34652,-87.9306],[43.35552,-87.92645],[43.3615,-87.92092],[43.37593,-87.89755],[43.37623,-87.87703],[43.38231,-87.87407],[43.38647,-87.87087],[43.39505,-87.86793],[43.40866,-87.86737],[43.41721,-87.86208],[43.43627,-87.86686],[43.46336,-87.86446],[43.4849,-87.85864],[43.49841,-87.85491],[43.50718,-87.85257],[43.53374,-87.84067],[43.55742,-87.82691],[43.56614,-87.8177],[43.57864,-87.81585],[43.60029,-87.80866],[43.61579,-87.79933],[43.63032,-87.7843],[43.64479,-87.77006],[43.65919,-87.75993],[43.6583,-87.72724],[43.66534,-87.72168],[43.67242,-87.71751],[43.69091,-87.71962],[43.69815,-87.70592],[43.72494,-87.71032],[43.74396,-87.71292],[43.75688,-87.71127],[43.78232,-87.71391],[43.78797,-87.72947],[43.81645,-87.74068],[43.85174,-87.74094],[43.86428,-87.73696],[43.88094,-87.73758],[43.91081,-87.73133],[43.92036,-87.72463],[43.93993,-87.72154],[43.95203,-87.71174],[43.97078,-87.70276],[43.98634,-87.7012],[44.00189,-87.69422],[44.02728,-87.68476],[44.04132,-87.66968],[44.06419,-87.66075],[44.08652,-87.6578],[44.09246,-87.65356],[44.09766,-87.65131],[44.10592,-87.6453],[44.10859,-87.64224],[44.11985,-87.62678],[44.12271,-87.62056],[44.12774,-87.60989],[44.13306,-87.59726],[44.13761,-87.58513],[44.14107,-87.57457],[44.14429,-87.56816],[44.16486,-87.57546],[44.17507,-87.60162],[44.17519,-87.63621],[44.175286,-87.650184],[44.17522,-87.66051],[44.17532,-87.68749],[44.18256,-87.70971],[44.18246,-87.75009],[44.1821,-87.78959],[44.17849,-87.80624],[44.18217,-87.82867],[44.18666,-87.84916],[44.19014,-87.87205],[44.19671,-87.89249],[44.21852,-87.91718],[44.22831,-87.931],[44.24036,-87.93612],[44.25534,-87.95405],[44.25541,-87.99642],[44.25548,-88.06701],[44.27925,-88.09079],[44.30062,-88.09806],[44.33734,-88.08827],[44.37967,-88.07686],[44.4172,-88.06674],[44.45096,-88.06181],[44.46931,-88.0488],[44.48633,-88.02958],[44.49423,-88.02139],[44.50715,-88.01954],[44.50917,-88.01995],[44.51447,-88.01732],[44.51813,-88.01364],[44.52761,-88.04379],[44.54098,-88.05811],[44.55499,-88.05881],[44.5562,-88.05778],[44.55726,-88.06033],[44.56229,-88.06473],[44.57674,-88.05819],[44.57994,-88.03906],[44.59927,-88.03898],[44.63187,-88.03922],[44.66971,-88.0293],[44.68478,-88.02215],[44.69899,-88.01735],[44.74953,-87.97863],[44.76203,-87.95663],[44.79646,-87.92064],[44.8299,-87.91188],[44.87987,-87.86478],[44.89288,-87.84171],[44.93044,-87.84321],[44.95078,-87.823],[44.95765,-87.80595],[44.96435,-87.78154],[44.97976,-87.76059],[45.02078,-87.75242],[45.03916,-87.7471],[45.05279,-87.74185],[45.05267,-87.71816],[45.06057,-87.70293],[45.07002,-87.67897],[45.08182,-87.66026],[45.09756,-87.65557],[45.10378,-87.64326],[45.11086,-87.63441],[45.12586,-87.67039],[45.13903,-87.676],[45.15427,-87.70032],[45.17275,-87.73355],[45.19066,-87.73818],[45.21065,-87.72442],[45.23371,-87.72188],[45.25954,-87.70621],[45.29297,-87.68766],[45.3078,-87.67169],[45.32795,-87.61476],[45.34746,-87.57339],[45.37019,-87.53316],[45.40054,-87.54297],[45.41954,-87.53258],[45.45506,-87.49738],[45.4945,-87.44106],[45.54371,-87.38139],[45.57247,-87.36907],[45.63815,-87.36753],[45.69419,-87.34639],[45.70835,-87.31024],[45.72461,-87.26386],[45.74341,-87.20261],[45.76409,-87.20277],[45.7912,-87.20278],[45.79667,-87.19443],[45.81091,-87.14177],[45.84089,-87.12609],[45.84048,-87.05349],[45.83752,-87.04003],[45.84319,-87.01885],[45.86924,-87.015],[45.91752,-86.98717],[45.92661,-86.96566],[45.92347,-86.93825],[45.91203,-86.91003],[45.89748,-86.8495],[45.8993,-86.76613],[45.89293,-86.74487],[45.87865,-86.73901],[45.8647,-86.73749],[45.85152,-86.72715],[45.8453,-86.70857],[45.84152,-86.68644],[45.84948,-86.64047],[45.86944,-86.62835],[45.89683,-86.60615],[45.89982,-86.56049],[45.89012,-86.52398],[45.89954,-86.49642],[45.91246,-86.47912],[45.92203,-86.46872],[45.94886,-86.46871],[45.95449,-86.44513],[45.95443,-86.42596],[45.95448,-86.3999],[45.94167,-86.3671],[45.94609,-86.32391],[45.95892,-86.29135],[45.96323,-86.25215],[45.95302,-86.24521],[45.9472,-86.23301],[45.96043,-86.22101],[45.96619,-86.20428],[45.9688,-86.16434],[45.95876,-86.14714],[45.96505,-86.12754],[45.96704,-86.10739],[45.96724,-86.08548],[45.96496,-86.05512],[45.9621,-86.03452],[45.96378,-86.0149],[45.97606,-86.01472],[45.9931,-86.01187],[46.03647,-85.97612],[46.0763,-85.95828],[46.09637,-85.9471],[46.10073,-85.92793],[46.10098,-85.77134],[46.10115,-85.69068],[46.11033,-85.61535],[46.11668,-85.57093],[46.13272,-85.50616],[46.12984,-85.47445],[46.12623,-85.41613],[46.14002,-85.38971],[46.14424,-85.35309],[46.15858,-85.31067],[46.15871,-85.25091],[46.16218,-85.21125],[46.1796,-85.18489],[46.1906,-85.15922],[46.19066,-85.13014],[46.18503,-85.07466],[46.19212,-85.03369],[46.19337,-85.01907],[46.18739,-84.97146],[46.18715,-84.93178],[46.187,-84.86458],[46.18669,-84.75312],[46.19838,-84.73879],[46.2083,-84.72801],[46.21063,-84.67804],[46.21673,-84.65895],[46.23055,-84.65042],[46.23045,-84.62839],[46.23243,-84.60034],[46.21086,-84.59242],[46.18529,-84.59858],[46.16753,-84.60894],[46.14815,-84.6196],[46.13401,-84.6285],[46.10246,-84.65424],[46.07076,-84.67999],[46.04923,-84.70219],[46.02372,-84.7217],[46.01336,-84.71586],[45.9869,-84.73698],[45.94424,-84.75419],[45.93062,-84.74649],[45.92192,-84.73418],[45.91245,-84.73881],[45.90349,-84.73455],[45.89349,-84.72867],[45.87822,-84.72541],[45.87241,-84.73082],[45.86855,-84.72656],[45.86415,-84.71851],[45.85891,-84.71785],[45.85148,-84.71859],[45.817244,-84.727728],[45.7816,-84.73462],[45.77971,-84.72583],[45.77073,-84.72709],[45.769941,-84.731339],[45.76064,-84.73254],[45.76718,-84.74336],[45.76685,-84.77626],[45.75224,-84.78773],[45.74768,-84.7962],[45.74594,-84.81426],[45.74391,-84.82849],[45.72943,-84.82753],[45.69805,-84.83337],[45.69441,-84.86974],[45.69423,-84.89473],[45.69698,-84.90405],[45.70045,-84.90974],[45.70028,-84.92528],[45.70151,-84.94428],[45.70278,-84.95159],[45.69982,-84.95446],[45.69694,-84.96103],[45.69306,-84.96207],[45.68784,-84.96803],[45.68178,-84.97362],[45.67755,-84.97195],[45.672,-84.97346],[45.6663,-84.98523],[45.66602,-84.99108],[45.66161,-84.99725],[45.65476,-85.00316],[45.65253,-85.00882],[45.6486,-85.0159],[45.645,-85.03197],[45.62981,-85.03703],[45.61382,-85.03697],[45.60885,-85.0507],[45.60887,-85.07695],[45.60249,-85.08778],[45.59419,-85.09685],[45.58736,-85.10571],[45.58264,-85.1117],[45.57421,-85.11306],[45.56179,-85.11325],[45.55341,-85.11343],[45.547,-85.11275],[45.54371,-85.11208],[45.53839,-85.11251],[45.53169,-85.11053],[45.52518,-85.10875],[45.52205,-85.10681],[45.51618,-85.10623],[45.51099,-85.10345],[45.50769,-85.0983],[45.50796,-85.07878],[45.49571,-85.07792],[45.48536,-85.07796],[45.47713,-85.07687],[45.47182,-85.07205],[45.47159,-85.05747],[45.46492,-85.05704],[45.45456,-85.05696],[45.4517,-85.05417],[45.44928,-85.05172],[45.44652,-85.04808],[45.43977,-85.03998],[45.43713,-85.03489],[45.43518,-85.02778],[45.4353,-84.99186],[45.42914,-84.98776],[45.42808,-84.97348],[45.42778,-84.9563],[45.42626,-84.94534],[45.42409,-84.92732],[45.41959,-84.9127],[45.41553,-84.90555],[45.40312,-84.90226],[45.39337,-84.90886],[45.38764,-84.92565],[45.38597,-84.93652],[45.38231,-84.94494],[45.37575,-84.95895],[45.37496,-84.96902],[45.37248,-84.97309],[45.37005,-84.97544],[45.36788,-84.98735],[45.3666,-85.01222],[45.36501,-85.01642],[45.36307,-85.0191],[45.35931,-85.02675],[45.35933,-85.04475],[45.35911,-85.05387],[45.35922,-85.06165],[45.35927,-85.07083],[45.35969,-85.08897],[45.36215,-85.11589],[45.36989,-85.14296],[45.36631,-85.16253],[45.36221,-85.17632],[45.35557,-85.18672],[45.34666,-85.19396],[45.3369,-85.21137],[45.33294,-85.24216],[45.32165,-85.25865],[45.31145,-85.26064],[45.3009,-85.26668],[45.29122,-85.28378],[45.27537,-85.2952],[45.26508,-85.29816],[45.24756,-85.3051],[45.23525,-85.31936],[45.22869,-85.34449],[45.2287,-85.37321],[45.2173,-85.38087],[45.19665,-85.37561],[45.17782,-85.37455],[45.15121,-85.36817],[45.1288,-85.35461],[45.11183,-85.35024],[45.10211,-85.35665],[45.09784,-85.35937],[45.09427,-85.35875],[45.09051,-85.35652],[45.08113,-85.35807],[45.07024,-85.35895],[45.06217,-85.35662],[45.0574,-85.35164],[45.0529,-85.34965],[45.03939,-85.3495],[45.03465,-85.34288],[45.02637,-85.33044],[45.01329,-85.33203],[45.00261,-85.32565],[44.98633,-85.32274],[44.97232,-85.32349],[44.95971,-85.32488],[44.94687,-85.3233],[44.93268,-85.32316],[44.92978,-85.33246],[44.93214,-85.35716],[44.92429,-85.37597],[44.91231,-85.3822],[44.89919,-85.39627],[44.90063,-85.41081],[44.88951,-85.41097],[44.87888,-85.40986],[44.84872,-85.40516],[44.8265,-85.43567],[44.78736,-85.43712],[44.76683,-85.45084],[44.76318,-85.47531],[44.75897,-85.4968],[44.76348,-85.50631],[44.75502,-85.51975],[44.74718,-85.52541],[44.74459,-85.53984],[44.74716,-85.5658],[44.75458,-85.59261],[44.7572,-85.60214],[44.76025,-85.60849],[44.7642,-85.61204],[44.76496,-85.61777],[44.76582,-85.62213],[44.76655,-85.62831],[44.76877,-85.63417],[44.77502,-85.64189],[44.77785,-85.64262],[44.78824,-85.64305],[44.78881,-85.65824],[44.78862,-85.67025],[44.79007,-85.69214],[44.79341,-85.71478],[44.79109,-85.73471],[44.80233,-85.75173],[44.80917,-85.76046],[44.81096,-85.77485],[44.8179,-85.79485],[44.82418,-85.79367],[44.8328,-85.79655],[44.84616,-85.79612],[44.84635,-85.82876],[44.85219,-85.84999],[44.85497,-85.86937],[44.85515,-85.90121],[44.84802,-85.93587],[44.84695,-85.94697],[44.84387,-85.9685],[44.84377,-85.97531],[44.84526,-85.98474],[44.85343,-85.98992],[44.85722,-86.00188],[44.85377,-86.01384],[44.84344,-86.01454],[44.83691,-86.02212],[44.83312,-86.03604],[44.82455,-86.04402],[44.80838,-86.05838],[44.80518,-86.04936],[44.7957,-86.047],[44.78578,-86.04964],[44.76547,-86.04936],[44.73625,-86.04923],[44.7291,-86.05532],[44.71546,-86.07316],[44.7116,-86.09801],[44.7117,-86.11308],[44.70264,-86.12821],[44.69905,-86.14092],[44.70081,-86.16486],[44.70131,-86.17887],[44.70119,-86.18841],[44.69254,-86.18801],[44.68615,-86.19181],[44.68963,-86.20571],[44.69313,-86.22009],[44.69611,-86.232],[44.69443,-86.24039],[44.68618,-86.24234],[44.67307,-86.24874],[44.66308,-86.24619],[44.65401,-86.24052],[44.64109,-86.24008],[44.63242,-86.2238],[44.62465,-86.22063],[44.61883,-86.22631],[44.60579,-86.22161],[44.60304,-86.21045],[44.59588,-86.21311],[44.58723,-86.2072],[44.57259,-86.20297],[44.54765,-86.2114],[44.53517,-86.2123],[44.52518,-86.22056],[44.52261,-86.23041],[44.51556,-86.23312],[44.50676,-86.23149],[44.47245,-86.23263],[44.46629,-86.23045],[44.44897,-86.23249],[44.4462,-86.2244],[44.43222,-86.22257],[44.41072,-86.22244],[44.39357,-86.21997],[44.38164,-86.21704],[44.3753,-86.21796],[44.364,-86.20807],[44.36116,-86.19281],[44.35044,-86.20294],[44.35087,-86.22338],[44.35077,-86.24193],[44.35307,-86.25495],[44.34888,-86.264],[44.34006,-86.27064],[44.33023,-86.27975],[44.32302,-86.28374],[44.31447,-86.28982],[44.30676,-86.29722],[44.29532,-86.30834],[44.28601,-86.31241],[44.27187,-86.31682],[44.25396,-86.32339],[44.23503,-86.32435],[44.20533,-86.32529],[44.15451,-86.33028],[44.08023,-86.34053],[44.04979,-86.35749],[44.04634,-86.38896],[44.01426,-86.41999],[43.98517,-86.42678],[43.97721,-86.45948],[43.96015,-86.44929],[43.94346,-86.43919],[43.93228,-86.41724],[43.92093,-86.42541],[43.9163,-86.44393],[43.90556,-86.44368],[43.89456,-86.44293],[43.8728,-86.43716],[43.8578,-86.43079],[43.84988,-86.42468],[43.84436,-86.42121],[43.83443,-86.42267],[43.82838,-86.42069],[43.82063,-86.41291],[43.809,-86.42179],[43.7896,-86.42965],[43.7763,-86.43276],[43.77128,-86.41593],[43.76538,-86.40727],[43.75887,-86.41011],[43.75008,-86.40149],[43.73457,-86.39616],[43.72086,-86.38828],[43.70336,-86.3748],[43.69117,-86.36904],[43.68212,-86.39569],[43.67686,-86.41887],[43.66067,-86.4176],[43.64966,-86.40261],[43.63795,-86.39437],[43.62977,-86.38547],[43.61583,-86.366],[43.60198,-86.36956],[43.58468,-86.3691],[43.57573,-86.35557],[43.54442,-86.34357],[43.50843,-86.34377],[43.49878,-86.34271],[43.47198,-86.34397],[43.44596,-86.34404],[43.42953,-86.34556],[43.41405,-86.35069],[43.40409,-86.34917],[43.3951,-86.34799],[43.38932,-86.34599],[43.3864,-86.33658],[43.38497,-86.32673],[43.37817,-86.30535],[43.36535,-86.28456],[43.34997,-86.27357],[43.33261,-86.26464],[43.30841,-86.25475],[43.29831,-86.25183],[43.29235,-86.2485],[43.28697,-86.24756],[43.28176,-86.2524],[43.27781,-86.25808],[43.26411,-86.24901],[43.25626,-86.23888],[43.24269,-86.24175],[43.23283,-86.2592],[43.22922,-86.26486],[43.23235,-86.27263],[43.22621,-86.27637],[43.22217,-86.28306],[43.21705,-86.28978],[43.20074,-86.29328],[43.17265,-86.28875],[43.1647,-86.28955],[43.14043,-86.27174],[43.13279,-86.2568],[43.12573,-86.25299],[43.12048,-86.25287],[43.11461,-86.24887],[43.09888,-86.2353],[43.0958,-86.23074],[43.09187,-86.22577],[43.08833,-86.22076],[43.07757,-86.2155],[43.07618,-86.21497],[43.07106,-86.21982],[43.06339,-86.22574],[43.04159,-86.22741],[43.03423,-86.22435],[43.02606,-86.22012],[43.01831,-86.21983],[43.01118,-86.21958],[43.00407,-86.21812],[42.998,-86.21625],[42.99174,-86.21939],[42.97697,-86.22127],[42.96337,-86.2188],[42.95231,-86.21669],[42.93719,-86.21222],[42.92384,-86.20734],[42.91652,-86.1987],[42.90088,-86.19881],[42.89642,-86.20475],[42.88933,-86.20816],[42.88073,-86.20986],[42.86399,-86.20807],[42.85208,-86.2079],[42.83804,-86.20732],[42.81311,-86.20725],[42.80414,-86.17918],[42.80475,-86.13761],[42.79916,-86.11777],[42.7982,-86.11126],[42.79086,-86.10718],[42.78074,-86.13563],[42.77483,-86.15385],[42.77442,-86.17164],[42.74688,-86.17622],[42.69806,-86.17493],[42.67245,-86.18888],[42.66109,-86.20225],[42.65481,-86.20083],[42.64422,-86.20049],[42.63619,-86.21194],[42.60869,-86.21154],[42.59085,-86.22317],[42.5831,-86.22695],[42.57219,-86.22891],[42.55502,-86.22863],[42.52531,-86.22761],[42.50786,-86.22741],[42.49638,-86.23797],[42.4859,-86.24554],[42.46439,-86.24662],[42.44448,-86.25139],[42.42657,-86.25563],[42.42013,-86.27152],[42.40462,-86.27417],[42.40041,-86.28211],[42.38587,-86.28353],[42.37941,-86.27849],[42.3691,-86.27824],[42.35884,-86.27839],[42.35714,-86.28055],[42.35496,-86.28344],[42.35205,-86.28641],[42.34801,-86.28879],[42.34541,-86.28715],[42.32323,-86.2821],[42.2948,-86.28205],[42.27962,-86.29564],[42.26167,-86.30132],[42.24346,-86.30247],[42.24305,-86.33541],[42.23132,-86.34025],[42.21506,-86.34139],[42.21023,-86.35707],[42.19961,-86.37002],[42.19176,-86.37782],[42.17792,-86.38457],[42.16408,-86.40362],[42.15032,-86.42569],[42.1397,-86.43997],[42.13663,-86.45583],[42.12613,-86.45551],[42.11473,-86.46084],[42.11345,-86.46659],[42.10907,-86.47599],[42.10379,-86.48803],[42.08794,-86.49559],[42.06944,-86.49481],[42.04342,-86.49485],[42.01691,-86.49486],[42.01443,-86.51811],[42.01223,-86.53027],[42.00888,-86.5343],[41.99563,-86.53851],[41.98556,-86.54286],[41.96896,-86.55145],[41.96474,-86.54186],[41.94794,-86.543],[41.92753,-86.54299],[41.90445,-86.54289],[41.89956,-86.57166],[41.89928,-86.58783],[41.89182,-86.59008],[41.87898,-86.58984],[41.85884,-86.59017],[41.8514,-86.59561],[41.84671,-86.60807],[41.84948,-86.62053],[41.84959,-86.6439],[41.84877,-86.66781],[41.84248,-86.6794],[41.83192,-86.69421],[41.81759,-86.71652],[41.80585,-86.73875],[41.79919,-86.74744],[41.78784,-86.74452],[41.7775,-86.75945],[41.77021,-86.76851],[41.76851,-86.7899],[41.76706,-86.80358],[41.76604,-86.8101],[41.7587,-86.82718],[41.74299,-86.86218],[41.72766,-86.89458],[41.72159,-86.90406],[41.70942,-86.9082],[41.7006,-86.91866],[41.68987,-86.93789],[41.69164,-86.9615],[41.69877,-86.96241],[41.69062,-86.98466],[41.68116,-87.00921],[41.67012,-87.00965],[41.6561,-87.00954],[41.6507,-87.01434],[41.644,-87.01197],[41.63467,-87.00891],[41.62561,-87.00944],[41.62042,-87.0137],[41.61668,-87.01663],[41.60838,-87.019],[41.6046,-87.02522],[41.60674,-87.04604],[41.60668,-87.07026],[41.60449,-87.08891],[41.59972,-87.09881],[41.59293,-87.11539],[41.58767,-87.12688],[41.58077,-87.14297],[41.57954,-87.14612],[41.57636,-87.15359],[41.57231,-87.16268],[41.56853,-87.17155],[41.56424,-87.18155],[41.55907,-87.19378],[41.55701,-87.1985],[41.55342,-87.20676],[41.54941,-87.21611],[41.54703,-87.22167],[41.54349,-87.22986],[41.53845,-87.23775],[41.53455,-87.24315],[41.53407,-87.24832],[41.52993,-87.24844],[41.52827,-87.25171],[41.52566,-87.25499],[41.52403,-87.25877],[41.52367,-87.26658],[41.52373,-87.27087],[41.52374,-87.28497],[41.52384,-87.30366],[41.52388,-87.31152],[41.52396,-87.32605],[41.52401,-87.33621],[41.52402,-87.34781],[41.52413,-87.359],[41.52418,-87.37224],[41.5242,-87.37975],[41.5228,-87.38782],[41.51828,-87.39048],[41.51654,-87.39394],[41.51501,-87.40479],[41.5148,-87.41566],[41.50988,-87.41994],[41.51547,-87.42414],[41.52049,-87.42776],[41.52605,-87.433],[41.53389,-87.4409],[41.5388,-87.44593],[41.54402,-87.45144],[41.54922,-87.45667],[41.554,-87.46184],[41.55696,-87.46434],[41.56069,-87.46583],[41.56288,-87.46597],[41.56786,-87.47586],[41.56779,-87.48117],[41.57271,-87.48461],[41.57537,-87.48302],[41.57868,-87.48645],[41.58628,-87.49407],[41.59192,-87.49966],[41.5955,-87.50282],[41.59684,-87.50291],[41.59772,-87.50544],[41.60057,-87.50859],[41.60442,-87.51236],[41.60607,-87.51396],[41.61486,-87.51383],[41.63024,-87.51366],[41.64168,-87.51015],[41.64565,-87.51278],[41.64951,-87.51575],[41.65361,-87.51449],[41.66097,-87.51432],[41.66673,-87.51754],[41.67473,-87.5218],[41.67874,-87.52113],[41.6819,-87.52253],[41.68837,-87.52428],[41.69181,-87.52815],[41.69378,-87.53529],[41.70195,-87.53528],[41.70822,-87.53528],[41.71485,-87.53529],[41.72798,-87.54222],[41.7455,-87.54041],[41.75195,-87.5501],[41.75449,-87.55505],[41.75991,-87.56078],[41.76632,-87.56639],[41.77382,-87.56712],[41.77574,-87.57152],[41.7784,-87.57552],[41.78746,-87.57759],[41.79361,-87.57981],[41.79999,-87.58116],[41.80335,-87.58151],[41.80954,-87.58746],[41.81331,-87.59069],[41.81699,-87.59472],[41.82005,-87.59664],[41.8248,-87.59838],[41.82823,-87.60254],[41.83146,-87.6055],[41.83453,-87.60654],[41.83671,-87.60731],[41.83834,-87.60747],[41.84346,-87.60948],[41.84934,-87.60966],[41.85584,-87.61273],[41.86116,-87.61348],[41.86564,-87.61329],[41.8684,-87.61424],[41.87292,-87.6169],[41.88223,-87.61649],[41.8845,-87.61312],[41.88444,-87.62045],[41.88448,-87.62881],[41.88552,-87.6413],[41.88561,-87.6508]];
 const MINI_ROUTE = [[41.88562,-87.65098],[41.88572,-87.64351],[41.88187,-87.6412],[41.88062,-87.63749],[41.8807,-87.63084],[41.88082,-87.62531],[41.88091,-87.61879],[41.87736,-87.61668],[41.87515,-87.6166],[41.8684,-87.61641],[41.86826,-87.61287],[41.8659,-87.61284],[41.86295,-87.61382],[41.85983,-87.61339],[41.85633,-87.61311],[41.85329,-87.61099],[41.84941,-87.60965],[41.84554,-87.60984],[41.84185,-87.60877],[41.839,-87.60731],[41.83751,-87.60746],[41.83635,-87.60729],[41.8348,-87.60653],[41.83284,-87.60567],[41.82966,-87.60355],[41.82648,-87.59893],[41.8227,-87.5987],[41.81969,-87.59655],[41.81627,-87.5933],[41.81402,-87.59056],[41.81053,-87.58756],[41.80668,-87.58495],[41.80375,-87.58149],[41.7996,-87.581],[41.79597,-87.57866],[41.79146,-87.57983],[41.78576,-87.57724],[41.7799,-87.57475],[41.77667,-87.57538],[41.77536,-87.57312],[41.77511,-87.56905],[41.77352,-87.56681],[41.76693,-87.56657],[41.7662,-87.56272],[41.76239,-87.55896],[41.76133,-87.5579],[41.75788,-87.55438],[41.75437,-87.5506],[41.75185,-87.5478],[41.74985,-87.54138],[41.74447,-87.54058],[41.73812,-87.54044],[41.72974,-87.54153],[41.72718,-87.54096],[41.72295,-87.53654],[41.71435,-87.53527],[41.70935,-87.53528],[41.70377,-87.53528],[41.70145,-87.53528],[41.69548,-87.53528],[41.69184,-87.53178],[41.6918,-87.52478],[41.69076,-87.52426],[41.68251,-87.52453],[41.68194,-87.52204],[41.67993,-87.52104],[41.67651,-87.52123],[41.6743,-87.52165],[41.67152,-87.52023],[41.66402,-87.51754],[41.661,-87.51571],[41.66099,-87.51223],[41.65645,-87.5137],[41.65078,-87.51566],[41.64603,-87.51733],[41.64312,-87.51719],[41.63737,-87.51722],[41.63101,-87.51729],[41.62861,-87.5174],[41.62628,-87.5173],[41.62229,-87.5194],[41.61861,-87.51957],[41.61469,-87.5188],[41.60635,-87.51394],[41.60463,-87.51252],[41.60002,-87.50804],[41.59785,-87.50583],[41.59751,-87.50478],[41.59674,-87.50278],[41.59565,-87.50284],[41.59409,-87.502],[41.59078,-87.49872],[41.5886,-87.49641],[41.5855,-87.49332],[41.58103,-87.48872],[41.57767,-87.48521],[41.57531,-87.48296],[41.57375,-87.48241],[41.56742,-87.4846],[41.56742,-87.48259],[41.56849,-87.47797],[41.56777,-87.47591],[41.56288,-87.47015],[41.56294,-87.46574],[41.56127,-87.46518],[41.56014,-87.4663],[41.55713,-87.46453],[41.55465,-87.46279],[41.55346,-87.46058],[41.55031,-87.45767],[41.5457,-87.45326],[41.54283,-87.44997],[41.53991,-87.4472],[41.537,-87.44438],[41.5336,-87.44071],[41.5264,-87.43345],[41.52294,-87.42987],[41.52015,-87.42777],[41.51669,-87.42494],[41.51376,-87.42287],[41.51003,-87.42004],[41.5108,-87.41838],[41.5168,-87.41435],[41.5171,-87.40882],[41.51532,-87.40293],[41.51746,-87.39738],[41.51677,-87.39398],[41.51813,-87.39104],[41.52099,-87.38941],[41.52278,-87.38422],[41.52405,-87.37985],[41.52421,-87.37487],[41.52418,-87.36864],[41.52414,-87.35972],[41.5241,-87.35132],[41.52407,-87.34578],[41.52401,-87.33643],[41.52404,-87.332],[41.52393,-87.32479],[41.5239,-87.31489],[41.52383,-87.30854],[41.52383,-87.30298],[41.52378,-87.29145],[41.52373,-87.28256],[41.5237,-87.2727],[41.52368,-87.26885],[41.52366,-87.26514],[41.52383,-87.25968],[41.52531,-87.25579],[41.52596,-87.25443],[41.52806,-87.25193],[41.52993,-87.24956],[41.53,-87.2476],[41.53355,-87.24726],[41.53456,-87.24691],[41.53389,-87.24401],[41.53592,-87.24126],[41.53685,-87.23996],[41.53976,-87.23594],[41.54313,-87.23072],[41.54492,-87.22654],[41.54714,-87.22151],[41.5489,-87.21714],[41.55094,-87.21262],[41.55404,-87.2053],[41.55652,-87.19971],[41.55797,-87.19647],[41.55916,-87.19313],[41.56223,-87.18624],[41.56598,-87.17752],[41.56808,-87.17259],[41.57139,-87.16487],[41.57281,-87.16152],[41.57527,-87.15582],[41.57641,-87.15317],[41.57846,-87.14838],[41.57966,-87.14393],[41.58095,-87.14275],[41.58346,-87.13676],[41.58743,-87.12753],[41.58939,-87.12289],[41.5925,-87.11639],[41.59566,-87.10806],[41.59915,-87.09997],[41.60192,-87.09373],[41.60449,-87.08895],[41.60667,-87.08039],[41.60673,-87.06094],[41.60675,-87.04494],[41.60463,-87.02707],[41.60466,-87.02247],[41.60871,-87.01885],[41.6151,-87.01663],[41.61919,-87.01494],[41.62082,-87.01172],[41.62522,-87.00944],[41.63303,-87.0087],[41.63653,-87.00946],[41.64413,-87.01213],[41.6482,-87.01435],[41.65142,-87.01104],[41.65568,-87.00954],[41.66051,-87.00956],[41.66652,-87.00962],[41.67275,-87.00968],[41.678,-87.00976],[41.6814,-87.00857],[41.68557,-86.99765],[41.69095,-86.98381],[41.69544,-86.97209],[41.69948,-86.96263],[41.69721,-86.96179],[41.69384,-86.96152],[41.69204,-86.95973],[41.69669,-86.95056],[41.69127,-86.94046],[41.6911,-86.93329],[41.69954,-86.92418],[41.70091,-86.91485],[41.70792,-86.90953],[41.71689,-86.90498],[41.72063,-86.90338],[41.72369,-86.90445],[41.72652,-86.89827],[41.73035,-86.88869],[41.73789,-86.87277],[41.74603,-86.8554],[41.75067,-86.84483],[41.7571,-86.83084],[41.76274,-86.81819],[41.7655,-86.81106],[41.76781,-86.8069],[41.76797,-86.80378],[41.76783,-86.79712],[41.76851,-86.7899],[41.77039,-86.77917],[41.77019,-86.76496],[41.77742,-86.76089],[41.78241,-86.75593],[41.78784,-86.74452],[41.79535,-86.74178],[41.7989,-86.74733],[41.80249,-86.74506],[41.80649,-86.73762],[41.81164,-86.72847],[41.81466,-86.7227],[41.81841,-86.71245],[41.82543,-86.6996],[41.83664,-86.68662],[41.8407,-86.67967],[41.8485,-86.67374],[41.85148,-86.6678],[41.84966,-86.65725],[41.84959,-86.6439],[41.84954,-86.63313],[41.84945,-86.61607],[41.8465,-86.60897],[41.84693,-86.60004],[41.85105,-86.59738],[41.85448,-86.59229],[41.85992,-86.59015],[41.86791,-86.59003],[41.88223,-86.58981],[41.89107,-86.58984],[41.89672,-86.58983],[41.89963,-86.58765],[41.89958,-86.57719],[41.89952,-86.56523],[41.90065,-86.54287],[41.91165,-86.54289],[41.92625,-86.54298],[41.94238,-86.54303],[41.94839,-86.543],[41.95741,-86.543],[41.96832,-86.54313],[41.96834,-86.55281],[41.97757,-86.54554],[41.98455,-86.54524],[41.98804,-86.54129],[41.99729,-86.5379],[42.00694,-86.53437],[42.01071,-86.53375],[42.01173,-86.53046],[42.01444,-86.52571],[42.01443,-86.51778],[42.01442,-86.50313],[42.01974,-86.49488],[42.03306,-86.49483],[42.04615,-86.4948],[42.05979,-86.49478],[42.07134,-86.49483],[42.08256,-86.49528],[42.09207,-86.49525],[42.09854,-86.49087],[42.10827,-86.48438],[42.10842,-86.47646],[42.11212,-86.47031],[42.11368,-86.46675],[42.11331,-86.46649],[42.11354,-86.46571],[42.11927,-86.45429],[42.12695,-86.45582],[42.13338,-86.45627],[42.13759,-86.45178],[42.13974,-86.44304],[42.14463,-86.43627],[42.14991,-86.42623],[42.15694,-86.41547],[42.16465,-86.40268],[42.17188,-86.39075],[42.17967,-86.38369],[42.18657,-86.38037],[42.19529,-86.37569],[42.19894,-86.37121],[42.20676,-86.3599],[42.21211,-86.35651],[42.21507,-86.34382],[42.222,-86.34019],[42.23186,-86.34025],[42.23994,-86.34032],[42.24309,-86.3331],[42.24323,-86.32486],[42.24345,-86.30344],[42.25332,-86.30127],[42.26589,-86.30134],[42.2796,-86.30014],[42.27964,-86.28721],[42.2864,-86.28199],[42.3029,-86.28209],[42.31863,-86.28212],[42.33422,-86.28217],[42.34543,-86.28399],[42.3465,-86.28935],[42.34926,-86.28818],[42.35184,-86.28658],[42.35401,-86.28457],[42.35573,-86.28242],[42.35713,-86.28057],[42.3583,-86.27901],[42.36049,-86.27812],[42.3689,-86.27823],[42.37594,-86.27839],[42.38138,-86.27856],[42.38506,-86.27954],[42.39483,-86.28368],[42.40042,-86.28088],[42.40399,-86.27564],[42.40538,-86.27269],[42.41019,-86.27673],[42.4218,-86.27067],[42.42651,-86.26425],[42.42633,-86.25565],[42.42647,-86.25531],[42.43386,-86.25583],[42.44161,-86.25281],[42.45298,-86.24898],[42.46645,-86.24665],[42.48253,-86.24687],[42.48679,-86.24476],[42.49206,-86.23955],[42.49878,-86.23571],[42.50566,-86.22826],[42.51617,-86.22746],[42.5249,-86.22761],[42.5362,-86.22785],[42.5529,-86.22852],[42.56216,-86.22904],[42.56909,-86.22938],[42.57663,-86.22805],[42.5819,-86.22715],[42.58668,-86.2257],[42.59281,-86.22283],[42.59387,-86.21119],[42.60494,-86.21147],[42.62328,-86.21179],[42.63562,-86.21198],[42.64049,-86.20941],[42.64367,-86.20437],[42.64783,-86.19973],[42.65437,-86.19992],[42.65714,-86.20543],[42.66191,-86.20116],[42.66593,-86.19718],[42.67332,-86.18791],[42.67932,-86.17644],[42.6986,-86.17495],[42.72015,-86.17552],[42.75417,-86.17654],[42.76853,-86.17643],[42.77442,-86.16996],[42.77551,-86.15778],[42.77421,-86.15022],[42.78002,-86.1373],[42.78203,-86.12279],[42.79166,-86.10719],[42.79515,-86.11204],[42.79905,-86.11127],[42.80079,-86.11414],[42.79457,-86.13079],[42.80408,-86.1376],[42.80462,-86.15968],[42.80413,-86.17873],[42.80439,-86.19847],[42.81151,-86.20716],[42.82525,-86.20763],[42.83732,-86.20777],[42.84414,-86.20807],[42.85404,-86.20748],[42.85532,-86.20746],[42.86397,-86.20794],[42.87221,-86.20843],[42.88035,-86.20937],[42.88519,-86.20991],[42.89061,-86.20724],[42.89528,-86.20545],[42.89723,-86.20352],[42.89918,-86.19965],[42.90468,-86.19738],[42.91183,-86.19762],[42.91822,-86.20062],[42.92121,-86.20514],[42.92955,-86.21118],[42.93775,-86.21206],[42.94467,-86.21271],[42.95245,-86.21661],[42.96007,-86.21748],[42.96474,-86.22023],[42.9751,-86.22138],[42.98648,-86.22037],[42.99242,-86.21916],[42.99605,-86.21731],[43.00141,-86.2172],[43.00495,-86.21831],[43.00943,-86.21927],[43.0157,-86.21976],[43.01933,-86.21986],[43.02414,-86.21988],[43.02936,-86.2221],[43.03465,-86.22468],[43.03867,-86.22523],[43.04374,-86.22767],[43.05887,-86.22806],[43.06901,-86.22648],[43.07147,-86.22453],[43.07468,-86.21886],[43.07389,-86.21866],[43.07621,-86.21527],[43.07783,-86.21517],[43.08177,-86.22043],[43.08909,-86.22118],[43.09073,-86.22464],[43.09438,-86.2272],[43.09586,-86.23081],[43.09676,-86.23322],[43.09893,-86.23533],[43.11002,-86.24034],[43.1172,-86.25033],[43.11992,-86.25242],[43.12262,-86.25299],[43.1259,-86.25303],[43.12797,-86.2538],[43.13278,-86.26308],[43.136,-86.26773],[43.15035,-86.28069],[43.16179,-86.28811],[43.16942,-86.29139],[43.1728,-86.28875],[43.18733,-86.28957],[43.20074,-86.29328],[43.21489,-86.29523],[43.21833,-86.28634],[43.2222,-86.28343],[43.22216,-86.27986],[43.2269,-86.27567],[43.22996,-86.27409],[43.23207,-86.27154],[43.22982,-86.26643],[43.22899,-86.26445],[43.23278,-86.25947],[43.24071,-86.25011],[43.24742,-86.24092],[43.25464,-86.23836],[43.25668,-86.24031],[43.26275,-86.24756],[43.26713,-86.25164],[43.27194,-86.25756],[43.27591,-86.26119],[43.2777,-86.25814],[43.27805,-86.25334],[43.28194,-86.24729],[43.28694,-86.24754],[43.29137,-86.24865],[43.29571,-86.24983],[43.29785,-86.25183],[43.30336,-86.25676],[43.31181,-86.25614],[43.3224,-86.26046],[43.33381,-86.26514],[43.34017,-86.26774],[43.34965,-86.27334],[43.36128,-86.28165],[43.36296,-86.28285],[43.37273,-86.29078],[43.37653,-86.30025],[43.38068,-86.31302],[43.38358,-86.32207],[43.385,-86.3268],[43.38718,-86.3332],[43.38559,-86.33686],[43.3873,-86.34402],[43.39128,-86.34603],[43.39485,-86.34787],[43.39831,-86.34895],[43.40383,-86.34916],[43.40758,-86.34945],[43.41204,-86.34973],[43.41896,-86.35234],[43.42649,-86.34774],[43.43313,-86.34418],[43.4387,-86.34415],[43.44345,-86.34411],[43.45003,-86.34403],[43.45929,-86.34403],[43.47324,-86.34397],[43.48372,-86.34391],[43.4966,-86.3438],[43.49949,-86.34294],[43.50495,-86.34406],[43.50987,-86.34377],[43.52453,-86.34369],[43.5352,-86.34362],[43.54813,-86.34356],[43.56088,-86.34529],[43.57298,-86.35255],[43.57646,-86.35735],[43.58036,-86.36481],[43.58564,-86.36961],[43.59327,-86.37028],[43.60131,-86.3696],[43.6048,-86.36847],[43.61355,-86.36493],[43.62162,-86.37176],[43.62618,-86.37929],[43.63071,-86.38663],[43.63413,-86.3908],[43.63746,-86.39413],[43.6419,-86.39636],[43.6458,-86.39841],[43.64956,-86.40245],[43.65596,-86.412],[43.6612,-86.41788],[43.66935,-86.41878],[43.67792,-86.41768],[43.67915,-86.40591],[43.68254,-86.39424],[43.68526,-86.38495],[43.68766,-86.3767],[43.69057,-86.37014],[43.69655,-86.36639],[43.70332,-86.37277],[43.70876,-86.37819],[43.718,-86.37867],[43.72428,-86.38854],[43.73295,-86.3926],[43.74079,-86.39902],[43.74807,-86.40047],[43.75414,-86.40533],[43.75705,-86.40811],[43.76073,-86.4126],[43.76433,-86.40801],[43.76789,-86.41171],[43.77113,-86.4153],[43.77493,-86.41855],[43.7763,-86.43276],[43.78714,-86.43312],[43.7896,-86.42965],[43.79603,-86.42797],[43.80782,-86.42214],[43.8157,-86.41632],[43.82162,-86.41475],[43.82748,-86.41912],[43.82834,-86.42306],[43.83297,-86.42411],[43.83863,-86.42111],[43.8453,-86.42172],[43.84894,-86.42472],[43.85171,-86.42729],[43.85711,-86.43051],[43.86438,-86.43365],[43.87128,-86.43655],[43.87712,-86.43901],[43.88312,-86.43911],[43.89026,-86.43982],[43.89619,-86.44337],[43.90322,-86.44376],[43.90916,-86.44205],[43.9142,-86.44362],[43.9205,-86.44436],[43.92095,-86.43259],[43.92218,-86.42204],[43.92666,-86.41757],[43.93732,-86.41682],[43.94173,-86.42655],[43.94245,-86.43914],[43.94948,-86.44353],[43.9485,-86.44958],[43.955276,-86.483065],[43.961605,-86.525937],[43.967935,-86.568809],[43.974264,-86.611681],[43.980594,-86.654553],[43.986923,-86.697426],[43.993252,-86.740298],[43.999582,-86.78317],[44.005911,-86.826042],[44.012241,-86.868914],[44.01857,-86.911786],[44.0249,-86.954658],[44.031229,-86.99753],[44.037558,-87.040402],[44.043888,-87.083274],[44.050217,-87.126146],[44.056547,-87.169018],[44.062876,-87.21189],[44.068844,-87.252312],[44.072474,-87.29585],[44.076104,-87.339389],[44.079733,-87.382927],[44.083363,-87.426465],[44.086993,-87.470003],[44.090623,-87.513541],[44.093326,-87.554684],[44.09276,-87.598762],[44.092227,-87.640321],[44.08625,-87.65304],[44.08371,-87.65688],[44.07647,-87.66076],[44.06182,-87.66075],[44.04952,-87.66235],[44.04216,-87.66889],[44.03853,-87.67328],[44.03128,-87.6795],[44.02492,-87.68685],[44.01232,-87.69134],[44.00069,-87.69477],[43.99438,-87.69901],[43.98164,-87.70109],[43.97346,-87.7011],[43.96804,-87.70471],[43.96053,-87.70999],[43.95126,-87.71183],[43.94522,-87.71778],[43.93885,-87.72153],[43.9321,-87.72147],[43.92672,-87.72347],[43.91803,-87.72491],[43.91422,-87.72869],[43.90477,-87.73124],[43.8962,-87.73169],[43.88718,-87.73517],[43.87904,-87.73828],[43.86958,-87.73729],[43.86366,-87.73836],[43.85568,-87.74098],[43.84445,-87.74086],[43.82823,-87.74078],[43.81645,-87.74068],[43.80507,-87.74023],[43.79126,-87.73185],[43.78511,-87.72777],[43.78288,-87.71638],[43.78091,-87.71306],[43.76072,-87.71199],[43.74887,-87.71164],[43.74361,-87.71328],[43.73468,-87.71103],[43.72034,-87.71033],[43.70712,-87.71042],[43.69832,-87.70587],[43.69289,-87.70751],[43.69092,-87.72037],[43.68217,-87.72075],[43.67263,-87.71807],[43.66782,-87.72024],[43.65969,-87.72567],[43.6583,-87.72731],[43.65867,-87.74266],[43.65889,-87.74986],[43.65671,-87.76616],[43.64599,-87.76844],[43.64483,-87.77382],[43.64072,-87.78426],[43.63034,-87.78872],[43.62848,-87.79919],[43.61581,-87.80048],[43.6088,-87.80553],[43.59974,-87.80883],[43.58668,-87.81317],[43.57514,-87.81698],[43.56996,-87.81703],[43.56421,-87.82207],[43.55742,-87.82691],[43.54761,-87.83341],[43.53474,-87.84023],[43.52585,-87.84423],[43.51404,-87.84957],[43.50453,-87.8533],[43.49948,-87.85437],[43.497,-87.85513],[43.48635,-87.85824],[43.47502,-87.86134],[43.46517,-87.86402],[43.45368,-87.86534],[43.44255,-87.86632],[43.42586,-87.86779],[43.41563,-87.86574],[43.41618,-87.86203],[43.41072,-87.86791],[43.40119,-87.86569],[43.39551,-87.86759],[43.39088,-87.86673],[43.38592,-87.87085],[43.38354,-87.87313],[43.38014,-87.87467],[43.37633,-87.87682],[43.37608,-87.88571],[43.37594,-87.89702],[43.36701,-87.91351],[43.3603,-87.92205],[43.35553,-87.9248],[43.35319,-87.92878],[43.34634,-87.9306],[43.340755,-87.940546],[43.32728,-87.95263],[43.32228,-87.96509],[43.30833,-87.97019],[43.30148,-87.98067],[43.29863,-87.98772],[43.29608,-87.98971],[43.28222,-87.99005],[43.27289,-87.99084],[43.26102,-87.99358],[43.25814,-87.99273],[43.25258,-87.99149],[43.24413,-87.98863],[43.23297,-87.98493],[43.22734,-87.98589],[43.22128,-87.98598],[43.20978,-87.98102],[43.20162,-87.9775],[43.18992,-87.97245],[43.18372,-87.96977],[43.17873,-87.96721],[43.17769,-87.96644],[43.17564,-87.96616],[43.17216,-87.96475],[43.17039,-87.96388],[43.16566,-87.96186],[43.16259,-87.9605],[43.15566,-87.95756],[43.14678,-87.9537],[43.13838,-87.9501],[43.12955,-87.9462],[43.12551,-87.94123],[43.1216,-87.93537],[43.11868,-87.93102],[43.1154,-87.92611],[43.11257,-87.92189],[43.10902,-87.91655],[43.10664,-87.91302],[43.10165,-87.90556],[43.09876,-87.90226],[43.09453,-87.89927],[43.08907,-87.89554],[43.08413,-87.89128],[43.07941,-87.89145],[43.0737,-87.8918],[43.06977,-87.89161],[43.06549,-87.89083],[43.06137,-87.88967],[43.05714,-87.88629],[43.05322,-87.8881],[43.0501,-87.89171],[43.04692,-87.89415],[43.04328,-87.89571],[43.03896,-87.89652],[43.03666,-87.89771],[43.03305,-87.90071],[43.02959,-87.90821],[43.024,-87.90602],[43.01871,-87.90893],[43.01183,-87.909],[43.00721,-87.9077],[43.00556,-87.90022],[42.99857,-87.89404],[42.99956,-87.88913],[43.00016,-87.88737],[42.99764,-87.88441],[42.99379,-87.88071],[42.99082,-87.8755],[42.98815,-87.87182],[42.9863,-87.86856],[42.98353,-87.86474],[42.98118,-87.86288],[42.97779,-87.85952],[42.97526,-87.85627],[42.97474,-87.85441],[42.97269,-87.85284],[42.9705,-87.85113],[42.96708,-87.84944],[42.96429,-87.84776],[42.96211,-87.84685],[42.95981,-87.84621],[42.95708,-87.84742],[42.95478,-87.84673],[42.95146,-87.8461],[42.94806,-87.84509],[42.94527,-87.84454],[42.94377,-87.84545],[42.94253,-87.84754],[42.94165,-87.84583],[42.93956,-87.84594],[42.93796,-87.84804],[42.93517,-87.84839],[42.9332,-87.84746],[42.93122,-87.84788],[42.93,-87.8504],[42.92699,-87.84986],[42.9246,-87.84985],[42.92236,-87.85871],[42.92334,-87.86323],[42.92321,-87.86806],[42.92295,-87.87355],[42.91536,-87.87301],[42.90955,-87.8733],[42.90809,-87.87456],[42.90714,-87.87763],[42.90581,-87.87957],[42.90619,-87.88241],[42.90634,-87.88785],[42.9054,-87.88991],[42.9039,-87.88952],[42.90326,-87.89103],[42.90095,-87.89476],[42.90007,-87.90318],[42.89575,-87.90108],[42.89345,-87.89995],[42.89085,-87.89876],[42.8884,-87.89746],[42.88543,-87.89603],[42.88323,-87.89238],[42.87182,-87.89218],[42.86678,-87.88692],[42.85701,-87.88218],[42.84581,-87.87671],[42.84168,-87.86472],[42.82745,-87.8649],[42.81382,-87.85984],[42.81331,-87.83923],[42.81348,-87.82693],[42.80953,-87.8242],[42.79314,-87.81619],[42.79098,-87.8151],[42.78463,-87.81202],[42.7736,-87.80634],[42.76223,-87.80301],[42.75013,-87.80327],[42.74213,-87.80675],[42.74181,-87.80949],[42.73964,-87.8095],[42.73308,-87.81217],[42.73154,-87.80842],[42.73194,-87.80536],[42.73151,-87.8043],[42.7304,-87.80493],[42.72896,-87.80482],[42.72712,-87.80547],[42.72391,-87.80664],[42.72013,-87.80831],[42.71872,-87.81203],[42.71475,-87.81616],[42.7064,-87.81633],[42.69982,-87.81638],[42.69667,-87.81634],[42.6862,-87.81638],[42.6779,-87.8183],[42.65897,-87.82569],[42.65207,-87.82833],[42.63806,-87.83357],[42.62897,-87.83732],[42.60911,-87.84224],[42.60627,-87.82381],[42.59527,-87.8206],[42.58765,-87.81916],[42.57969,-87.81511],[42.56881,-87.81266],[42.56218,-87.81325],[42.5563,-87.82015],[42.55107,-87.81611],[42.54829,-87.81315],[42.54494,-87.81435],[42.53781,-87.81455],[42.53172,-87.81386],[42.52365,-87.81242],[42.50866,-87.8093],[42.50752,-87.8206],[42.50757,-87.83886],[42.50494,-87.84487],[42.49277,-87.84499],[42.48439,-87.84506],[42.469,-87.84522],[42.45851,-87.84532],[42.45038,-87.84535],[42.44352,-87.84544],[42.43558,-87.84552],[42.42568,-87.84565],[42.41151,-87.8454],[42.40405,-87.84549],[42.3943,-87.84564],[42.38821,-87.84574],[42.383,-87.84582],[42.37495,-87.84594],[42.3695,-87.84588],[42.36522,-87.84607],[42.36115,-87.84613],[42.35573,-87.8463],[42.35129,-87.84626],[42.34824,-87.8463],[42.33955,-87.84646],[42.33499,-87.84651],[42.33049,-87.84659],[42.32627,-87.84667],[42.32258,-87.8468],[42.31865,-87.8466],[42.31564,-87.84539],[42.31588,-87.84371],[42.31279,-87.84552],[42.30708,-87.8462],[42.29724,-87.84635],[42.28804,-87.84641],[42.28322,-87.84645],[42.27874,-87.84618],[42.26964,-87.84467],[42.25822,-87.84126],[42.25339,-87.83979],[42.25041,-87.8388],[42.24338,-87.83671],[42.23757,-87.83494],[42.23119,-87.83096],[42.22351,-87.82508],[42.22029,-87.82263],[42.21827,-87.82107],[42.21775,-87.81873],[42.21891,-87.81567],[42.22048,-87.81176],[42.21834,-87.80834],[42.21634,-87.8089],[42.21121,-87.80651],[42.20846,-87.80511],[42.20338,-87.80251],[42.20285,-87.79864],[42.19977,-87.79748],[42.19552,-87.79761],[42.19052,-87.79776],[42.18703,-87.79786],[42.18428,-87.79764],[42.18031,-87.79443],[42.17976,-87.7908],[42.17833,-87.78704],[42.17714,-87.78329],[42.17506,-87.78011],[42.17181,-87.77749],[42.17099,-87.77487],[42.17007,-87.77343],[42.1678,-87.77255],[42.16372,-87.77254],[42.1609,-87.7727],[42.15966,-87.76947],[42.15803,-87.76829],[42.1532,-87.76862],[42.15231,-87.76674],[42.15198,-87.76205],[42.14846,-87.76031],[42.14581,-87.75903],[42.14389,-87.75876],[42.14184,-87.75587],[42.1393,-87.75496],[42.13449,-87.75421],[42.13056,-87.75094],[42.12742,-87.74863],[42.12139,-87.74342],[42.11959,-87.74155],[42.11577,-87.7409],[42.11556,-87.73395],[42.11302,-87.73145],[42.11011,-87.72912],[42.10763,-87.72698],[42.10338,-87.72233],[42.09998,-87.7186],[42.09743,-87.7158],[42.09604,-87.71428],[42.0951,-87.71325],[42.09364,-87.71131],[42.0888,-87.70279],[42.08651,-87.6997],[42.0847,-87.69761],[42.08148,-87.69538],[42.07739,-87.68914],[42.07527,-87.68463],[42.07411,-87.68295],[42.0687,-87.68275],[42.06863,-87.67912],[42.06394,-87.67707],[42.05926,-87.67715],[42.05636,-87.67719],[42.05213,-87.67727],[42.05032,-87.67467],[42.04672,-87.67418],[42.04424,-87.67487],[42.03389,-87.67364],[42.03105,-87.67061],[42.02708,-87.66845],[42.02318,-87.66547],[42.02112,-87.66658],[42.01519,-87.6681],[42.00668,-87.66622],[42.0037,-87.66569],[41.99804,-87.6654],[41.99454,-87.66158],[41.98735,-87.65602],[41.98647,-87.65406],[41.9843,-87.65204],[41.98142,-87.65203],[41.97775,-87.65022],[41.97487,-87.6488],[41.97105,-87.64793],[41.96917,-87.64695],[41.96742,-87.64713],[41.96532,-87.64617],[41.9629,-87.64572],[41.96184,-87.64412],[41.9594,-87.64567],[41.95738,-87.64521],[41.95567,-87.64442],[41.95033,-87.64332],[41.948,-87.64228],[41.94569,-87.64074],[41.94227,-87.63905],[41.93919,-87.6366],[41.937,-87.63343],[41.93396,-87.63175],[41.93061,-87.63143],[41.92594,-87.6297],[41.92371,-87.6302],[41.92054,-87.62931],[41.91676,-87.62794],[41.91465,-87.62666],[41.91308,-87.62543],[41.91099,-87.62509],[41.90772,-87.62512],[41.90271,-87.6235],[41.90147,-87.62016],[41.89847,-87.61759],[41.89343,-87.61403],[41.89158,-87.6138],[41.88932,-87.6137],[41.88735,-87.61359],[41.88496,-87.61316],[41.88453,-87.61517],[41.88444,-87.62292],[41.8845,-87.62688],[41.88448,-87.63175],[41.88446,-87.63784],[41.88553,-87.64132],[41.88568,-87.64649],[41.88562,-87.65079]];
 
@@ -184,42 +370,42 @@ const SHOTS = [
   {id:"m07",races:["main","mini"],section:"Chicago Start",name:"Wrigleyville / Wrigley Field Vicinity",coords:[41.9484,-87.6553],priority:"standard",miles:{main:7.7,mini:534.2},direction:"North (Main outbound) / South (Mini near finish)",description:"Wrigley Field marquee or ivy wall in background, rider in Chicago neighborhood context. Route passes 0.63 miles from the park — look for the marquee visible from the route.",notes:"Confirm exact street the route uses in this section. Good opportunity to show riders in the urban fabric before suburbs. For Mini-Gami riders are near the finish at this point — very different emotional state."},
   // SECTION: NORTH SHORE
   {id:"m08",races:["main","mini"],section:"North Shore",name:"Evanston / Northwestern University",coords:[42.0490,-87.6745],priority:"standard",miles:{main:16,mini:527},direction:"North (Main) / South (Mini)",description:"Riders through tree-canopied streets near Northwestern campus. Stately early-20th-century architecture as backdrop. Good contrast between riders' gear and the academic setting.",notes:"Route at roughly -87.67 longitude through here — likely campus-adjacent streets. For Mini: same location, opposite direction, and completely different rider condition (530+ miles vs 15 miles in)."},
-  {id:"m09",races:["main","mini"],section:"North Shore",name:"Bahá'í Temple — Wilmette ⭐",coords:[42.0725,-87.6827],priority:"iconic",miles:{main:17.9,mini:523.9},direction:"North (Main) / South (Mini near finish)",description:"The ornate white dome of the Bahá'í House of Worship rises behind a rider. One of the most architecturally distinctive buildings in the Midwest. Route passes within 0.06–0.07 miles — literally right past it.",notes:"Temple faces east toward the lake. Shoot from the approach with the dome over the rider's shoulder. Best in morning light (Main: still AM at mile 18). Temple grounds open at 6 AM. For Mini: riders have covered 524 miles — the 'almost home' narrative is powerful here."},
+  {id:"m09",races:["main","mini"],section:"North Shore",name:"Bahá'í Temple — Wilmette",coords:[42.0725,-87.6827],priority:"iconic",miles:{main:17.9,mini:523.9},direction:"North (Main) / South (Mini near finish)",description:"The ornate white dome of the Bahá'í House of Worship rises behind a rider. One of the most architecturally distinctive buildings in the Midwest. Route passes within 0.06–0.07 miles — literally right past it.",notes:"Temple faces east toward the lake. Shoot from the approach with the dome over the rider's shoulder. Best in morning light (Main: still AM at mile 18). Temple grounds open at 6 AM. For Mini: riders have covered 524 miles — the 'almost home' narrative is powerful here."},
   // SECTION: WISCONSIN COAST
   {id:"m10",races:["main","mini"],section:"Wisconsin Coast",name:"Illinois–Wisconsin State Line",coords:[42.4940,-87.8000],priority:"standard",miles:{main:55,mini:487},direction:"North (Main) / South (Mini)",description:"State line sign shot. Classic 'entering Wisconsin' moment. Route crosses within 1 mile of the actual border.",notes:"Find the 'Welcome to Wisconsin/Illinois' signage. May require a short walk from where you park."},
-  {id:"m11",races:["main","mini"],section:"Wisconsin Coast",name:"Kenosha Lighthouse and Harbor ⭐",coords:[42.5867,-87.8177],priority:"iconic",miles:{main:61.3,mini:480.6},direction:"North (Main) / South (Mini)",description:"Route passes within 0.06 miles of the Kenosha lighthouse on the lake. Lighthouse with rider on the adjacent lakefront path. This stretch feels distinctly Great Lakes — different than suburban Illinois.",notes:"Kenosha's lakefront park has good access and parking. Lighthouse at end of pier in Southport Park. Multiple angles — from the pier looking back, or from shore. Kenosha historic streetcar runs through harbor district."},
+  {id:"m11",races:["main","mini"],section:"Wisconsin Coast",name:"Kenosha Lighthouse and Harbor",coords:[42.5867,-87.8177],priority:"iconic",miles:{main:61.3,mini:480.6},direction:"North (Main) / South (Mini)",description:"Route passes within 0.06 miles of the Kenosha lighthouse on the lake. Lighthouse with rider on the adjacent lakefront path. This stretch feels distinctly Great Lakes — different than suburban Illinois.",notes:"Kenosha's lakefront park has good access and parking. Lighthouse at end of pier in Southport Park. Multiple angles — from the pier looking back, or from shore. Kenosha historic streetcar runs through harbor district."},
   {id:"m12",races:["main","mini"],section:"Wisconsin Coast",name:"Racine Lakefront",coords:[42.7319,-87.7784],priority:"standard",miles:{main:73.3,mini:468.6},direction:"North (Main) / South (Mini)",description:"Racine harbor / Root River area. Route passes ~1.3 miles from the lighthouse. The lakefront road offers views of Lake Michigan and the open water.",notes:"Lower priority than Kenosha or Milwaukee. Lakefront parks along Racine's north side are accessible."},
-  {id:"m13",races:["main","mini"],section:"Wisconsin Coast",name:"Milwaukee Art Museum / Veterans Park ⭐",coords:[43.0399,-87.8962],priority:"iconic",miles:{main:105.7,mini:436.5},direction:"North (Main) / South (Mini)",description:"The Santiago Calatrava-designed Milwaukee Art Museum — one of the most photographed structures in the Midwest. Route passes within 0.04–0.06 miles. Get a rider with the museum's dramatic white form, or on the lakefront path with museum visible.",notes:"Lake Drive / Lincoln Memorial Drive runs right past here. Burke Brise Soleil 'wings' most dramatic in morning light (Main: mile 105 = mid-morning for fastest riders). Multiple shooting positions along Veterans Park. Easy parking. Milwaukee Summerfest grounds also nearby."},
+  {id:"m13",races:["main","mini"],section:"Wisconsin Coast",name:"Milwaukee Art Museum / Veterans Park",coords:[43.0399,-87.8962],priority:"iconic",miles:{main:105.7,mini:436.5},direction:"North (Main) / South (Mini)",description:"The Santiago Calatrava-designed Milwaukee Art Museum — one of the most photographed structures in the Midwest. Route passes within 0.04–0.06 miles. Get a rider with the museum's dramatic white form, or on the lakefront path with museum visible.",notes:"Lake Drive / Lincoln Memorial Drive runs right past here. Burke Brise Soleil 'wings' most dramatic in morning light (Main: mile 105 = mid-morning for fastest riders). Multiple shooting positions along Veterans Park. Easy parking. Milwaukee Summerfest grounds also nearby."},
   {id:"m14",races:["main","mini"],section:"Wisconsin Coast",name:"Port Washington Lighthouse",coords:[43.3878,-87.8632],priority:"standard",miles:{main:135.8,mini:406.8},direction:"North (Main) / South (Mini)",description:"1935 art deco lighthouse on the breakwater, harbor, Lake Michigan. Route passes 0.25 miles away. Classic Wisconsin lakefront town feel.",notes:"Port Washington is a charming small harbor town — good for a 'small-town ultra' character shot."},
   {id:"m15",races:["main","mini"],section:"Wisconsin Coast",name:"Sheboygan Lakefront",coords:[43.7503,-87.7113],priority:"standard",miles:{main:167.2,mini:375.3},direction:"North (Main) / South (Mini)",description:"Route passes 0.38 miles from the Sheboygan lighthouse. Lake Michigan views. Kohler-Andrae State Park just south has beautiful dune-backed beach.",notes:"Worth a stop if positioned here. A mid-route checkpoint for riders on day 2 or 3 — may provide better candid/character opportunities."},
   {id:"m16",races:["main","mini"],section:"Wisconsin Coast",name:"Manitowoc Maritime Museum / Lighthouse",coords:[44.0978,-87.6458],priority:"high",miles:{main:194.1,mini:348.8},direction:"North (Main) / South (Mini ferry arrival)",description:"Route passes 0.09–0.25 miles from Manitowoc. The Wisconsin Maritime Museum (WWII submarine on display) is right downtown. For Mini-Gami: riders are arriving by SS Badger ferry — the 'landing in a new state' moment.",notes:"For Mini-Gami this is a priority: riders descending the ferry ramp into Manitowoc. Multiple composition options at the dock. Ferry terminal is immediately adjacent to Maritime Museum."},
   {id:"m17",races:["main"],section:"Wisconsin Coast",name:"Two Rivers Lighthouse",coords:[44.1521,-87.5638],priority:"standard",miles:{main:200},direction:"North",description:"Route passes within 0.23 miles of the Two Rivers lighthouse. Milestone: mile 200 is a round-number moment worth marking.",notes:"Two Rivers is a small lakefront town — accessible, low traffic."},
   {id:"m18",races:["main"],section:"Wisconsin Coast",name:"Green Bay Corridor",coords:[44.4270,-88.0641],priority:"standard",miles:{main:250},direction:"North",description:"Route passes through Green Bay urban area. Fox River, industrial waterfront, and city context tell a different chapter — urban grit between scenic Lake Michigan sections.",notes:"Lambeau Field is approximately 3 miles from the route at mile 248 — worth flagging but unlikely to be in-frame without a detour."},
   // SECTION: UPPER PENINSULA ENTRY
-  {id:"m19",races:["main"],section:"Upper Peninsula",name:"Menominee/Marinette — WI-MI State Line ⭐",coords:[45.1071,-87.6331],priority:"iconic",miles:{main:307.9},direction:"Northeast",description:"Riders crossing the Menominee River bridge from Wisconsin into Michigan's Upper Peninsula. State line crossing with 'Welcome to Michigan' sign. Wooded banks, classic North Woods feel. Significant geographic and psychological milestone at mile 308.",notes:"Route passes within 0.09 miles of Menominee MI. Park on the Michigan side and shoot riders as they complete the crossing. The bridge + river in frame = compelling milestone image."},
+  {id:"m19",races:["main"],section:"Upper Peninsula",name:"Menominee/Marinette — WI-MI State Line",coords:[45.1071,-87.6331],priority:"iconic",miles:{main:307.9},direction:"Northeast",description:"Riders crossing the Menominee River bridge from Wisconsin into Michigan's Upper Peninsula. State line crossing with 'Welcome to Michigan' sign. Wooded banks, classic North Woods feel. Significant geographic and psychological milestone at mile 308.",notes:"Route passes within 0.09 miles of Menominee MI. Park on the Michigan side and shoot riders as they complete the crossing. The bridge + river in frame = compelling milestone image."},
   {id:"m20",races:["main"],section:"Upper Peninsula",name:"UP North Woods Character",coords:[46.2,-86.5],priority:"high",miles:{main:425},direction:"East",description:"Isolated rider in dense North Woods — hardwood and conifer mix, minimal traffic, dappled or golden light through tree canopy. The UP's isolation is the story here. Pick a stretch with good sight lines.",notes:"Find stretches where the road curves through forest for visual depth. Dawn/dusk shots especially powerful given the remoteness. Miles 320–530 offer various options — scout in advance."},
   // SECTION: MACKINAC
-  {id:"m21",races:["main"],section:"Mackinac Bridge",name:"St. Ignace — North End of Mackinac Bridge ⭐",coords:[45.8660,-84.7242],priority:"iconic",miles:{main:571.7},direction:"South",description:"Riders rolling into St. Ignace with the Mackinac Bridge in the background — the 5-mile suspension bridge framing the shot. The most dramatic single structure on the entire route. From St. Ignace side, full bridge span visible.",notes:"Route passes within 0.09 miles. Park near Straits State Park or lakefront in St. Ignace. Multiple angles: rider + bridge from north side, or shoot from below bridge on approach road."},
+  {id:"m21",races:["main"],section:"Mackinac Bridge",name:"St. Ignace — North End of Mackinac Bridge",coords:[45.8660,-84.7242],priority:"iconic",miles:{main:571.7},direction:"South",description:"Riders rolling into St. Ignace with the Mackinac Bridge in the background — the 5-mile suspension bridge framing the shot. The most dramatic single structure on the entire route. From St. Ignace side, full bridge span visible.",notes:"Route passes within 0.09 miles. Park near Straits State Park or lakefront in St. Ignace. Multiple angles: rider + bridge from north side, or shoot from below bridge on approach road."},
   {id:"m22",races:["main"],section:"Mackinac Bridge",name:"Mackinac Bridge — Center Span (Shuttle)",coords:[45.8178,-84.7272],priority:"iconic",miles:{main:574.5},direction:"South",description:"Riders being shuttled across the bridge. From the bridge deck: riders with the Straits of Mackinac and massive towers in frame. From the water: bridge overhead is spectacular.",notes:"Route passes within 0.03 miles of center span. Coordinate with whoever is organizing the shuttle logistics. A chase vehicle or media shuttle on the bridge would be ideal."},
   {id:"m23",races:["main"],section:"Mackinac Bridge",name:"Mackinaw City — South End",coords:[45.7789,-84.7290],priority:"high",miles:{main:578.9},direction:"South",description:"Riders rolling out of Mackinaw City post-bridge, with the bridge now behind them to the north. Historic Fort Michilimackinac at the bridge's south end — colonial fort with the bridge towering in background.",notes:"Route passes within 0.12 miles. The fort and Colonial Michilimackinac State Park are walkable from the route."},
   // SECTION: NORTHERN LOWER PENINSULA
-  {id:"m24",races:["main"],section:"N. Lower Peninsula",name:"Petoskey — Little Traverse Bay ⭐",coords:[45.3734,-84.9553],priority:"iconic",miles:{main:634.3},direction:"South",description:"Little Traverse Bay opens up dramatically as riders approach Petoskey — deep blue water, wooded hillsides. The Gaslight District (charming Victorian downtown) provides character. Route passes within 0.22 miles.",notes:"The bay view from the north approach into Petoskey is particularly good. Petoskey State Park, just north of town, may offer the elevated perspective needed."},
-  {id:"m25",races:["main"],section:"N. Lower Peninsula",name:"Charlevoix — Channel and Harbor ⭐",coords:[45.3178,-85.2583],priority:"iconic",miles:{main:651.8},direction:"South",description:"Route passes within 0.02 miles of Charlevoix's famous drawbridge channel — a narrow cut connecting Lake Michigan to Lake Charlevoix. Riders cross this bridge with open water on both sides. Both lakes visible simultaneously.",notes:"The Pine River Channel drawbridge is one of the most photographed spots in northern Michigan. Perfect pinch-point for catching riders. Shoot from the bridge deck or channel banks below."},
+  {id:"m24",races:["main"],section:"N. Lower Peninsula",name:"Petoskey — Little Traverse Bay",coords:[45.3734,-84.9553],priority:"iconic",miles:{main:634.3},direction:"South",description:"Little Traverse Bay opens up dramatically as riders approach Petoskey — deep blue water, wooded hillsides. The Gaslight District (charming Victorian downtown) provides character. Route passes within 0.22 miles.",notes:"The bay view from the north approach into Petoskey is particularly good. Petoskey State Park, just north of town, may offer the elevated perspective needed."},
+  {id:"m25",races:["main"],section:"N. Lower Peninsula",name:"Charlevoix — Channel and Harbor",coords:[45.3178,-85.2583],priority:"iconic",miles:{main:651.8},direction:"South",description:"Route passes within 0.02 miles of Charlevoix's famous drawbridge channel — a narrow cut connecting Lake Michigan to Lake Charlevoix. Riders cross this bridge with open water on both sides. Both lakes visible simultaneously.",notes:"The Pine River Channel drawbridge is one of the most photographed spots in northern Michigan. Perfect pinch-point for catching riders. Shoot from the bridge deck or channel banks below."},
   {id:"m26",races:["main"],section:"N. Lower Peninsula",name:"Elk Rapids — Grand Traverse Bay",coords:[44.9010,-85.4140],priority:"standard",miles:{main:691.1},direction:"South",description:"Route passes within 0.06 miles of Elk Rapids. The north arm of Grand Traverse Bay is visible — broad, clear blue water. Small harbor town with fishing boats.",notes:"A quieter alternative to Traverse City for a bay shot without the crowds."},
-  {id:"m27",races:["main"],section:"N. Lower Peninsula",name:"Traverse City — West Bay ⭐",coords:[44.7631,-85.6206],priority:"high",miles:{main:712.9},direction:"South",description:"Grand Traverse Bay's West Arm frames riders rolling through Traverse City. The city's waterfront parks, marina, and downtown backdrop make this a visually rich stop. Route passes within 0.16 miles.",notes:"Most-visited city on the Michigan Lower Peninsula section. Front Street waterfront is accessible. Good food/resupply stop for photographers too."},
-  {id:"m28",races:["main"],section:"Sleeping Bear",name:"Empire, MI — Gateway to Sleeping Bear Dunes ⭐",coords:[44.8119,-86.0585],priority:"iconic",miles:{main:743.0},direction:"South",description:"Route passes within 0.08 miles of Empire. The massive sand dunes rise to the north — one of the most dramatic Great Lakes landscapes in existence. A rider rolling through Empire with the green wooded dune ridges in background is a powerful image.",notes:"Sleeping Bear Dunes Overlook is 2.5 miles from the route near mile 739. For the highest-impact shot, pre-position at Empire Beach or overlook area before riders arrive."},
+  {id:"m27",races:["main"],section:"N. Lower Peninsula",name:"Traverse City — West Bay",coords:[44.7631,-85.6206],priority:"high",miles:{main:712.9},direction:"South",description:"Grand Traverse Bay's West Arm frames riders rolling through Traverse City. The city's waterfront parks, marina, and downtown backdrop make this a visually rich stop. Route passes within 0.16 miles.",notes:"Most-visited city on the Michigan Lower Peninsula section. Front Street waterfront is accessible. Good food/resupply stop for photographers too."},
+  {id:"m28",races:["main"],section:"Sleeping Bear",name:"Empire, MI — Gateway to Sleeping Bear Dunes",coords:[44.8119,-86.0585],priority:"iconic",miles:{main:743.0},direction:"South",description:"Route passes within 0.08 miles of Empire. The massive sand dunes rise to the north — one of the most dramatic Great Lakes landscapes in existence. A rider rolling through Empire with the green wooded dune ridges in background is a powerful image.",notes:"Sleeping Bear Dunes Overlook is 2.5 miles from the route near mile 739. For the highest-impact shot, pre-position at Empire Beach or overlook area before riders arrive."},
   {id:"m29",races:["main"],section:"Sleeping Bear",name:"Frankfort Lighthouse",coords:[44.6344,-86.2490],priority:"standard",miles:{main:764.8},direction:"South",description:"The Frankfort North Breakwater Lighthouse sits at the end of a long concrete pier over Lake Michigan. Route passes 0.63 miles away. The Betsie Lake channel and the lighthouse make for a classic Michigan coast image.",notes:"Pre-positioned photographer at the lighthouse can catch riders on the adjacent lakefront road."},
   // SECTION: MID-MICHIGAN COAST
   {id:"m30",races:["main"],section:"Mid-Michigan Coast",name:"Manistee — River and Harbor",coords:[44.2439,-86.3243],priority:"high",miles:{main:800.5},direction:"South",description:"Route passes within 0.02 miles of Manistee. The Manistee River channel, Victorian downtown architecture, and Lake Michigan harbor form an underrated backdrop. The bascule bridge over the river is right on the route — a natural pinch-point.",notes:"Good 'gritty working town' character shot for the mid-route narrative."},
   {id:"m31",races:["main","mini"],section:"Mid-Michigan Coast",name:"Ludington — Ferry Terminal / Big Sable",coords:[43.9489,-86.4505],priority:"iconic",miles:{main:826.7,mini:288.6},direction:"South (Main) / West boarding ferry (Mini)",description:"For Main Event: route passes 0.59 miles from the Ludington lighthouse. SS Badger car ferry terminal is in Ludington. For Mini-Gami: THE defining shot — riders wheeling bikes up the ramp, the ship's superstructure towering above, the lighthouse visible across the channel.",notes:"Mini-Gami: this is on the route — don't miss it. Multiple opportunities: riders approaching, boarding sequence, on-deck shots. The SS Badger crossing (~60 miles, ~4 hours) gives candid shots in a genuinely unique context."},
   {id:"m32",races:["main","mini"],section:"Mid-Michigan Coast",name:"Pentwater — Inlet and Lighthouse",coords:[43.7823,-86.4300],priority:"high",miles:{main:842.7,mini:273.4},direction:"South (Main) / North (Mini)",description:"Route passes within 0.10–0.16 miles of Pentwater. Small harbor town with a narrow inlet — a natural pinch-point for catching riders. One of the quieter, more intimate Michigan coast towns.",notes:"Easy parking near the Pentwater channel park. The lighthouse is at the end of the north pier."},
   {id:"m33",races:["main","mini"],section:"Mid-Michigan Coast",name:"Muskegon Lakefront",coords:[43.2342,-86.2484],priority:"standard",miles:{main:891.3,mini:224.2},direction:"South (Main) / North (Mini)",description:"Route passes 0.41 miles from the Muskegon lakefront. Muskegon Channel and Lake Michigan. Pere Marquette Beach is nearby.",notes:"USS Silversides WWII submarine museum is nearby — an unusual backdrop if the route passes close enough."},
-  {id:"m34",races:["main","mini"],section:"Mid-Michigan Coast",name:"Grand Haven — Pier Lights ⭐",coords:[43.0601,-86.2577],priority:"iconic",miles:{main:908.4,mini:207.1},direction:"South (Main) / North (Mini)",description:"Grand Haven's twin pier lights (connected by a catwalk) are among the most photographed lighthouses in Michigan. Route passes 1.48 miles away — the furthest major lighthouse, but the lakefront boulevard makes pre-positioning feasible.",notes:"Grand Haven is extremely accessible and popular. The Musical Fountain and boardwalk are right there. Given the 1.5mi gap, confirm exact route street before committing."},
+  {id:"m34",races:["main","mini"],section:"Mid-Michigan Coast",name:"Grand Haven — Pier Lights",coords:[43.0601,-86.2577],priority:"iconic",miles:{main:908.4,mini:207.1},direction:"South (Main) / North (Mini)",description:"Grand Haven's twin pier lights (connected by a catwalk) are among the most photographed lighthouses in Michigan. Route passes 1.48 miles away — the furthest major lighthouse, but the lakefront boulevard makes pre-positioning feasible.",notes:"Grand Haven is extremely accessible and popular. The Musical Fountain and boardwalk are right there. Given the 1.5mi gap, confirm exact route street before committing."},
   {id:"m35",races:["main","mini"],section:"Mid-Michigan Coast",name:"Saugatuck Harbor",coords:[42.6584,-86.2027],priority:"high",miles:{mini:168.2},direction:"North (Mini)",description:"Route passes within 0.14 miles of Saugatuck's harbor — one of the most charming small-boat harbors on the entire Michigan coast. Wooden fishing boats, dune-backed channel, Kalamazoo River mouth opening into Lake Michigan.",notes:"Saugatuck is known as an arts community. The harbor area around the Kalamazoo River mouth is extremely photogenic."},
-  {id:"m36",races:["main","mini"],section:"Mid-Michigan Coast",name:"Holland — Lake Macatawa and Windmills ⭐",coords:[42.7870,-86.1089],priority:"iconic",miles:{main:934.1,mini:181.1},direction:"South (Main) / North (Mini)",description:"Route passes within 0.09 miles of Holland's Lake Macatawa area. The channel to Lake Michigan, the windmills of Windmill Island, and Dutch-influenced downtown. A rider with a traditional windmill in frame is hard to beat.",notes:"Confirm which street the route uses through Holland to identify best windmill sightline. Windmill Island is north of downtown."},
+  {id:"m36",races:["main","mini"],section:"Mid-Michigan Coast",name:"Holland — Lake Macatawa and Windmills",coords:[42.7870,-86.1089],priority:"iconic",miles:{main:934.1,mini:181.1},direction:"South (Main) / North (Mini)",description:"Route passes within 0.09 miles of Holland's Lake Macatawa area. The channel to Lake Michigan, the windmills of Windmill Island, and Dutch-influenced downtown. A rider with a traditional windmill in frame is hard to beat.",notes:"Confirm which street the route uses through Holland to identify best windmill sightline. Windmill Island is north of downtown."},
   {id:"m37",races:["main","mini"],section:"Mid-Michigan Coast",name:"South Haven — Pier and Lighthouse",coords:[42.4031,-86.2670],priority:"standard",miles:{main:967.3,mini:147.9},direction:"South (Main) / North (Mini)",description:"South Haven's South Pier lighthouse. Route passes 0.32 miles away. Red lighthouse against lake blue is classic Michigan. Black River channel offers multiple shooting positions.",notes:"South Haven is extremely charming — good for a golden-hour shot as riders approach from the north/south."},
   {id:"m38",races:["main","mini"],section:"Mid-Michigan Coast",name:"New Buffalo, MI — Entering Michigan",coords:[41.7941,-86.7471],priority:"high",miles:{mini:84.6},direction:"North (Mini)",description:"Route passes within 0.17 miles of New Buffalo, the first town in Michigan from Indiana. 'Welcome to Michigan' sign + dramatic shift in landscape (wooded dunes vs. Indiana industrial flat) make this a meaningful milestone.",notes:"New Buffalo is a charming small harbor town on Lake Michigan. The pier/lighthouse is a 0.3-mile walk from the route."},
-  {id:"m39",races:["main","mini"],section:"Mid-Michigan Coast",name:"St. Joseph — Silver Beach and Twin Lighthouses ⭐",coords:[42.0986,-86.4766],priority:"iconic",miles:{main:996,mini:118.7},direction:"South (Main) / North (Mini)",description:"St. Joseph's two iconic red lighthouses extend into Lake Michigan on long concrete piers. One of the most photogenic spots on the Michigan coast. On the northbound Mini-Gami leg, riders have covered ~120 miles — still fresh.",notes:"Silver Beach is directly accessible from the lakefront road. Multiple angles: from the beach looking northwest toward the piers, or from the pier catwalk looking back at the town."},
+  {id:"m39",races:["main","mini"],section:"Mid-Michigan Coast",name:"St. Joseph — Silver Beach and Twin Lighthouses",coords:[42.0986,-86.4766],priority:"iconic",miles:{main:996,mini:118.7},direction:"South (Main) / North (Mini)",description:"St. Joseph's two iconic red lighthouses extend into Lake Michigan on long concrete piers. One of the most photogenic spots on the Michigan coast. On the northbound Mini-Gami leg, riders have covered ~120 miles — still fresh.",notes:"Silver Beach is directly accessible from the lakefront road. Multiple angles: from the beach looking northwest toward the piers, or from the pier catwalk looking back at the town."},
   // SECTION: INDIANA
   {id:"m40",races:["main","mini"],section:"Indiana",name:"Michigan City, IN — Lighthouse",coords:[41.7075,-86.8951],priority:"standard",miles:{main:1043.1,mini:72.9},direction:"South/SW (Main) / North (Mini)",description:"Route passes 0.38–0.45 miles from Michigan City's Washington Park Lighthouse. The Indiana Dunes coastline marks the transition to/from Indiana. For Main: this is the 'home stretch begins' visual — riders have covered 1,000+ miles.",notes:"Indiana Dunes National Park is 2.3 miles from the route at mile 1053. If you can pre-position at the park shoreline, you can get riders with the dune-backed lakefront."},
   {id:"m41",races:["mini"],section:"Indiana",name:"Gary / Calumet Industrial Landscape",coords:[41.540,-87.350],priority:"standard",miles:{mini:40},direction:"East",description:"Steel mills, refineries, and industrial waterfront of Gary/East Chicago create a striking and underrated backdrop — rusted infrastructure against a flat Indiana sky. This industrial corridor is unlike anything else on the route.",notes:"US Steel Gary Works and the Inland Steel complex are visible from the route corridor. An honest, unglamorous portrait of the route through this section."},
@@ -228,36 +414,100 @@ const SHOTS = [
   {id:"m43",races:["main"],section:"Chicago Return",name:"Hammond / Chicago Skyline Re-Emergence",coords:[41.6300,-87.5003],priority:"high",miles:{main:1092.3},direction:"Northeast",description:"As riders approach from Indiana, the Chicago skyline begins to appear in the distance — first time they've seen it since they left. This is emotionally significant. A long lens shot with the distant skyline behind a rider on the flat south shore road.",notes:"Look for elevated ground or clear sightlines west of Hammond for the best view of downtown Chicago from the south."},
   {id:"m44",races:["main","mini"],section:"Chicago Return",name:"Chicago Lakefront — Return",coords:[41.8550,-87.6100],priority:"high",miles:{main:1111,mini:538},direction:"North",description:"The route returns to the Chicago lakefront heading north — 1,100+ miles later (Main) or 537 miles later (Mini). Riders coming north with the skyline building ahead. Symmetry of the route is a powerful narrative device.",notes:"Same angles that worked at the start work here in reverse. The return on both routes uses the lakefront path — accessible from multiple points."},
   {id:"m45",races:["mini"],section:"Chicago Return",name:"Great Lakes Naval Station",coords:[42.3148,-87.8395],priority:"standard",miles:{mini:502.3},direction:"South",description:"Route passes 0.22 miles from the Great Lakes Naval Station — the largest naval station in the U.S. Destroyers and training vessels visible from the road. Military ships against Lake Michigan on the approach to Chicago.",notes:"Confirm public access angles. Ships are visible from the perimeter road."},
-  {id:"m46",races:["main","mini"],section:"Chicago Return",name:"Grand Finish — West Loop ⭐",coords:[41.8856,-87.6508],priority:"iconic",miles:{main:1115.7,mini:541.4},direction:"West",description:"Riders crossing the finish line back in the West Loop. Exhausted faces, raised arms, emotional moments. The city backdrop bookends the entire journey — started here, ended here.",notes:"Same location as the Grand Depart. Plan for daylight range if any riders finish at night. The contrast between start shots and finish shots tells the whole story of each race."},
+  {id:"m46",races:["main","mini"],section:"Chicago Return",name:"Grand Finish — West Loop",coords:[41.8856,-87.6508],priority:"iconic",miles:{main:1115.7,mini:541.4},direction:"West",description:"Riders crossing the finish line back in the West Loop. Exhausted faces, raised arms, emotional moments. The city backdrop bookends the entire journey — started here, ended here.",notes:"Same location as the Grand Depart. Plan for daylight range if any riders finish at night. The contrast between start shots and finish shots tells the whole story of each race."},
   // MINI-SPECIFIC: SS BADGER
-  {id:"m47",races:["mini"],section:"SS Badger Ferry",name:"SS Badger — On the Water ⭐",coords:[44.000,-87.100],priority:"iconic",miles:{mini:316},direction:"West",description:"Aboard the 410-foot SS Badger, Lake Michigan stretches in every direction — no land visible. Riders on deck, bikes secured in the car hold. The scale of the lake from the water is different than anything from shore. Sunset or sunrise timing during the crossing could be extraordinary.",notes:"The crossing is approximately 60 miles and takes ~4 hours. If you're on the ferry with riders, you have the crossing for candid shots in a context genuinely unique to this event. This is the Mini-Gami's defining photographic opportunity."},
+  {id:"m47",races:["mini"],section:"SS Badger Ferry",name:"SS Badger — On the Water",coords:[44.000,-87.100],priority:"iconic",miles:{mini:316},direction:"West",description:"Aboard the 410-foot SS Badger, Lake Michigan stretches in every direction — no land visible. Riders on deck, bikes secured in the car hold. The scale of the lake from the water is different than anything from shore. Sunset or sunrise timing during the crossing could be extraordinary.",notes:"The crossing is approximately 60 miles and takes ~4 hours. If you're on the ferry with riders, you have the crossing for candid shots in a context genuinely unique to this event. This is the Mini-Gami's defining photographic opportunity."},
 ];
+
 
 // ─── STATE ─────────────────────────────────────────────────────
 let map, mainRouteLine, miniRouteLine;
-let markers = {};
+const markers = {};
+let activeShot = null;
 let raceFilter = 'all';
 let priorityFilter = 'all';
-let crewFilter = null; // null = no crew filter
-let activeShot = null;
+let crewFilter = null;
+let pickMode = false;
+let userShots = [];
+
+// ─── CREW ASSIGNMENTS (localStorage) ──────────────────────────
 let crewAssignments = {};
-
-// Load crew assignments from localStorage
-try {
-  const saved = localStorage.getItem('mucShotCrewAssignments');
-  if (saved) crewAssignments = JSON.parse(saved);
-} catch(e) {}
-
+function loadCrewAssignments() {
+  try {
+    const saved = localStorage.getItem('mucShotCrewAssignments');
+    if (saved) crewAssignments = JSON.parse(saved);
+  } catch(e) {}
+}
 function saveCrewAssignments() {
   try { localStorage.setItem('mucShotCrewAssignments', JSON.stringify(crewAssignments)); } catch(e) {}
 }
 
+// ─── JSONBIN SYNC ──────────────────────────────────────────────
+function setSync(state, msg) {
+  const el = document.getElementById('sync-status');
+  el.className = state;
+  el.textContent = msg;
+}
+
+async function loadUserShots() {
+  if (!JSONBIN_KEY || !JSONBIN_BIN_ID) {
+    // Try localStorage fallback
+    try {
+      const saved = localStorage.getItem('mucUserShots');
+      if (saved) userShots = JSON.parse(saved);
+    } catch(e) {}
+    return;
+  }
+  setSync('syncing', 'Syncing locations...');
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    const data = await res.json();
+    userShots = (data.record && data.record.userShots) ? data.record.userShots : [];
+    localStorage.setItem('mucUserShots', JSON.stringify(userShots));
+    setSync('ok', `${userShots.length} custom location${userShots.length !== 1 ? 's' : ''} loaded`);
+  } catch(e) {
+    setSync('err', 'Sync unavailable — using local data');
+    try {
+      const saved = localStorage.getItem('mucUserShots');
+      if (saved) userShots = JSON.parse(saved);
+    } catch(e2) {}
+  }
+}
+
+async function saveUserShots() {
+  localStorage.setItem('mucUserShots', JSON.stringify(userShots));
+  if (!JSONBIN_KEY || !JSONBIN_BIN_ID) return;
+  setSync('syncing', 'Saving...');
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
+      body: JSON.stringify({ userShots })
+    });
+    setSync('ok', `${userShots.length} custom location${userShots.length !== 1 ? 's' : ''} saved`);
+  } catch(e) {
+    setSync('err', 'Save failed — stored locally');
+  }
+}
+
+function allShots() {
+  return [...SHOTS, ...userShots];
+}
+
 // ─── MAP INIT ─────────────────────────────────────────────────
 function initMap() {
+  loadCrewAssignments();
+
   map = L.map('map', {
     center: [43.5, -86.5],
     zoom: 6,
-    zoomControl: true
+    zoomControl: true,
+    attributionControl: true
   });
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -266,121 +516,141 @@ function initMap() {
     maxZoom: 19
   }).addTo(map);
 
-  // Draw routes
-  mainRouteLine = L.polyline(MAIN_ROUTE, {
-    color: '#F49A0B',
-    weight: 2.5,
-    opacity: 0.7,
-    smoothFactor: 1
-  }).addTo(map);
+  // Route lines
+  mainRouteLine = L.polyline(MAIN_ROUTE, { color: '#4D94BF', weight: 2, opacity: .55 }).addTo(map);
+  miniRouteLine = L.polyline(MINI_ROUTE, { color: '#A06868', weight: 2, opacity: .55, dashArray: '6 4' }).addTo(map);
 
-  miniRouteLine = L.polyline(MINI_ROUTE, {
-    color: '#4FC3F7',
-    weight: 2.5,
-    opacity: 0.7,
-    smoothFactor: 1
-  }).addTo(map);
+  // Map click handler for pick mode
+  map.on('click', function(e) {
+    if (!pickMode) return;
+    document.getElementById('f-lat').value = e.latlng.lat.toFixed(6);
+    document.getElementById('f-lng').value = e.latlng.lng.toFixed(6);
+    document.getElementById('pick-hint').textContent = 'Coordinates set — click again to adjust or press Add Location.';
+  });
 
-  // Add markers
+  // Load built-in shots
   SHOTS.forEach(shot => {
     const marker = createMarker(shot);
     markers[shot.id] = marker;
     marker.addTo(map);
   });
 
-  renderSidebar();
-  updateStats();
+  loadUserShots().then(() => {
+    userShots.forEach(shot => {
+      const marker = createMarker(shot);
+      markers[shot.id] = marker;
+      marker.addTo(map);
+    });
+    renderSidebar();
+    updateStats();
+  });
 }
 
+// ─── MARKER ICONS ─────────────────────────────────────────────
 function getMarkerIcon(shot) {
-  const crew = crewAssignments[shot.id] || [];
   const isIconic = shot.priority === 'iconic';
-  const isMultiRace = shot.races.length > 1;
-  
-  // Color based on race
-  let color = '#F49A0B'; // amber for main
-  if (shot.races.length === 1 && shot.races[0] === 'mini') color = '#4FC3F7';
-  else if (isMultiRace) color = '#E8C44D'; // gold for both
-  
-  const size = isIconic ? 18 : 12;
-  const star = isIconic ? '⭐' : '';
-  
+  const isHigh   = shot.priority === 'high';
+  const isUser   = !!shot.userAdded;
+
+  let color;
+  if (isUser) {
+    color = '#FFFBF8';
+  } else if (shot.races.length > 1) {
+    color = '#FFFBF8'; // both races — cream/white stands out
+  } else if (shot.races[0] === 'mini') {
+    color = '#A06868';
+  } else {
+    color = '#4D94BF';
+  }
+
+  const size = isIconic ? 18 : 10;
+  const glowStyle = isIconic
+    ? `box-shadow:0 0 10px ${color},0 0 0 2px ${color},0 2px 8px rgba(0,0,0,.5);`
+    : 'box-shadow:0 0 0 1px rgba(0,0,0,.6),0 1px 4px rgba(0,0,0,.5);';
+
+  // Iconic: diamond shape; others: circle
+  const shape = isIconic
+    ? `border-radius:2px;transform:rotate(45deg);`
+    : `border-radius:50%;`;
+
   return L.divIcon({
     className: '',
     html: `<div style="
       width:${size}px;height:${size}px;
       background:${color};
-      border:2px solid #051829;
-      border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      font-size:${isIconic ? 9 : 0}px;
-      box-shadow:0 0 0 1px ${color},0 2px 8px rgba(0,0,0,.5);
+      border:${isIconic ? '2px' : '1.5px'} solid #051829;
+      ${shape}
+      ${glowStyle}
       cursor:pointer;
-      ${isIconic ? 'box-shadow:0 0 8px ' + color + ',0 0 0 2px ' + color + ';' : ''}
-    ">
-      ${isIconic ? '★' : ''}
-    </div>`,
+    "></div>`,
     iconSize: [size, size],
     iconAnchor: [size/2, size/2]
   });
 }
 
 function createMarker(shot) {
-  const marker = L.marker(shot.coords, {icon: getMarkerIcon(shot)});
-  
-  marker.on('click', () => {
-    selectShot(shot.id);
-  });
-
+  const marker = L.marker(shot.coords, { icon: getMarkerIcon(shot) });
+  marker.on('click', () => selectShot(shot.id));
   return marker;
 }
 
 function refreshMarkerIcon(shotId) {
-  const shot = SHOTS.find(s => s.id === shotId);
-  if (shot && markers[shotId]) {
-    markers[shotId].setIcon(getMarkerIcon(shot));
-  }
+  const shot = allShots().find(s => s.id === shotId);
+  if (shot && markers[shotId]) markers[shotId].setIcon(getMarkerIcon(shot));
 }
 
 // ─── SIDEBAR ──────────────────────────────────────────────────
 function renderSidebar() {
   const list = document.getElementById('shot-list');
   const sections = {};
-  
-  SHOTS.forEach(shot => {
-    if (!sections[shot.section]) sections[shot.section] = [];
-    sections[shot.section].push(shot);
+
+  allShots().forEach(shot => {
+    const sec = shot.section || 'Custom';
+    if (!sections[sec]) sections[sec] = [];
+    sections[sec].push(shot);
   });
 
   let html = '';
   Object.entries(sections).forEach(([section, shots]) => {
     const sectionShots = shots.filter(s => isVisible(s));
+    if (sectionShots.length === 0) return;
     html += `<div class="section-header">${section} (${sectionShots.length})</div>`;
     shots.forEach(shot => {
       const crew = crewAssignments[shot.id] || [];
       const visible = isVisible(shot);
       const isActive = activeShot === shot.id;
-      
-      const raceBadges = shot.races.map(r => 
-        `<span class="shot-race-badge badge-${r}">${r === 'main' ? 'MAIN' : 'MINI'}</span>`
+
+      const raceBadges = shot.races.map(r =>
+        `<span class="shot-race-badge badge-${r}">${r === 'main' ? 'MAIN' : r === 'mini' ? 'MINI' : r.toUpperCase()}</span>`
       ).join('');
-      
+
       const mileText = Object.entries(shot.miles || {})
         .map(([r, m]) => `mi ${m}`)
         .join(' / ');
 
       const crewDots = crew.map(c => `<div class="crew-dot dot-${c}"></div>`).join('');
-      
-      const prioIcon = shot.priority === 'iconic' ? '⭐' : shot.priority === 'high' ? '◆' : '·';
-      
+
+      // Priority indicator — no emoji
+      let prioHtml;
+      if (shot.priority === 'iconic') {
+        prioHtml = `<span class="prio-diamond"></span>`;
+      } else if (shot.priority === 'high') {
+        prioHtml = `<span class="prio-diamond-sm"></span>`;
+      } else {
+        prioHtml = `<span class="prio-dot"></span>`;
+      }
+
+      const userTag = shot.userAdded ? `<span class="user-badge">+ added</span>` : '';
+
       html += `<div class="shot-item ${isActive ? 'active' : ''} ${!visible ? 'hidden' : ''}"
         id="shot-item-${shot.id}"
         onclick="selectShot('${shot.id}')">
-        <div class="shot-icon">${prioIcon}</div>
+        <div class="shot-prio">${prioHtml}</div>
         <div class="shot-info">
           <div class="shot-name">${shot.name}</div>
           <div class="shot-meta">
             ${raceBadges}
+            ${userTag}
             <span style="color:#2a4560">${mileText}</span>
           </div>
           <div class="shot-crew-dots">${crewDots}</div>
@@ -388,32 +658,23 @@ function renderSidebar() {
       </div>`;
     });
   });
-  
+
   list.innerHTML = html;
 }
 
+// ─── VISIBILITY ───────────────────────────────────────────────
 function isVisible(shot) {
-  // Race filter
-  if (raceFilter !== 'all') {
-    if (!shot.races.includes(raceFilter)) return false;
-  }
-  
-  // Priority filter
-  if (priorityFilter !== 'all') {
-    if (shot.priority !== priorityFilter) return false;
-  }
-  
-  // Crew filter
+  if (raceFilter !== 'all' && !shot.races.includes(raceFilter)) return false;
+  if (priorityFilter !== 'all' && shot.priority !== priorityFilter) return false;
   if (crewFilter) {
     const crew = crewAssignments[shot.id] || [];
     if (!crew.includes(crewFilter)) return false;
   }
-  
   return true;
 }
 
 function updateMarkerVisibility() {
-  SHOTS.forEach(shot => {
+  allShots().forEach(shot => {
     const marker = markers[shot.id];
     if (!marker) return;
     if (isVisible(shot)) {
@@ -422,8 +683,7 @@ function updateMarkerVisibility() {
       if (map.hasLayer(marker)) map.removeLayer(marker);
     }
   });
-  
-  // Route visibility
+
   if (raceFilter === 'mini') {
     if (map.hasLayer(mainRouteLine)) map.removeLayer(mainRouteLine);
     if (!map.hasLayer(miniRouteLine)) miniRouteLine.addTo(map);
@@ -437,64 +697,65 @@ function updateMarkerVisibility() {
 }
 
 function updateStats() {
-  const visible = SHOTS.filter(s => isVisible(s));
+  const visible = allShots().filter(s => isVisible(s));
   const assigned = visible.filter(s => (crewAssignments[s.id] || []).length > 0);
   const iconic = visible.filter(s => s.priority === 'iconic');
-  document.getElementById('stats-text').textContent = 
+  document.getElementById('stats-text').textContent =
     `${visible.length} shots · ${iconic.length} iconic · ${assigned.length} assigned`;
 }
 
 // ─── SELECTION ────────────────────────────────────────────────
 function selectShot(id) {
+  if (pickMode) return;
   activeShot = id;
-  const shot = SHOTS.find(s => s.id === id);
+  const shot = allShots().find(s => s.id === id);
   if (!shot) return;
-  
-  // Pan to shot
-  map.panTo(shot.coords, {animate: true});
-  
-  // Update sidebar active state
+
+  map.panTo(shot.coords, { animate: true });
+
   document.querySelectorAll('.shot-item').forEach(el => el.classList.remove('active'));
   const item = document.getElementById(`shot-item-${id}`);
   if (item) {
     item.classList.add('active');
-    item.scrollIntoView({behavior:'smooth', block:'nearest'});
+    item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-  
-  // Show detail panel
   showDetail(shot);
 }
 
 function showDetail(shot) {
   const panel = document.getElementById('detail');
   const crew = crewAssignments[shot.id] || [];
-  
+
   document.getElementById('detail-title').textContent = shot.name;
-  
+
   // Badges
-  const badges = shot.races.map(r => 
-    `<span class="shot-race-badge badge-${r}">${r === 'main' ? 'MAIN EVENT' : 'MINI-GAMI'}</span>`
+  const raceBadges = shot.races.map(r =>
+    `<span class="shot-race-badge badge-${r}">${r === 'main' ? 'MAIN EVENT' : r === 'mini' ? 'MINI-GAMI' : r.toUpperCase()}</span>`
   ).join(' ');
-  const prioBadge = shot.priority === 'iconic' ? '<span class="prio-iconic">⭐ ICONIC</span>' : 
-                    shot.priority === 'high' ? '<span class="prio-high">◆ HIGH PRIORITY</span>' : '';
-  document.getElementById('detail-badges').innerHTML = badges + ' ' + prioBadge;
-  
-  // Miles
+
+  let prioBadge = '';
+  if (shot.priority === 'iconic') {
+    prioBadge = `<span class="prio-iconic-label">&#9670; Iconic</span>`;
+  } else if (shot.priority === 'high') {
+    prioBadge = `<span class="prio-high-label">&#9670; High Priority</span>`;
+  }
+  const userBadge = shot.userAdded ? `<span class="user-badge">+ crew added by ${shot.addedBy || '?'}</span>` : '';
+
+  document.getElementById('detail-badges').innerHTML = raceBadges + ' ' + prioBadge + ' ' + userBadge;
+
   const milesHtml = Object.entries(shot.miles || {}).map(([race, m]) =>
     `<span class="detail-meta-item"><strong>Mile ${m}</strong> (${race === 'main' ? 'Main Event' : 'Mini-Gami'})</span>`
   ).join('');
-  document.getElementById('detail-miles').innerHTML = milesHtml;
-  
+  document.getElementById('detail-miles').innerHTML = milesHtml || '<span style="color:#2a4560">—</span>';
+
   document.getElementById('detail-direction').textContent = shot.direction || '—';
   document.getElementById('detail-description').textContent = shot.description || '—';
   document.getElementById('detail-notes').textContent = shot.notes || '—';
-  
-  // Crew buttons
-  ['jack','cody','aaron'].forEach(name => {
-    const btn = document.getElementById(`crew-${name}`);
-    btn.classList.toggle('on', crew.includes(name));
+
+  ['jack', 'cody', 'aaron'].forEach(name => {
+    document.getElementById(`crew-${name}`).classList.toggle('on', crew.includes(name));
   });
-  
+
   panel.classList.add('open');
 }
 
@@ -514,22 +775,18 @@ function toggleCrew(name) {
   } else {
     crewAssignments[activeShot].push(name);
   }
-  
   saveCrewAssignments();
-  
-  // Update button
+
   const btn = document.getElementById(`crew-${name}`);
   btn.classList.toggle('on', crewAssignments[activeShot].includes(name));
-  
-  // Update sidebar dots for this shot
+
   const item = document.getElementById(`shot-item-${activeShot}`);
   if (item) {
     const dotsEl = item.querySelector('.shot-crew-dots');
     const crew = crewAssignments[activeShot] || [];
     dotsEl.innerHTML = crew.map(c => `<div class="crew-dot dot-${c}"></div>`).join('');
   }
-  
-  // Re-check visibility if crew filter active
+
   if (crewFilter) {
     updateMarkerVisibility();
     updateStats();
@@ -539,7 +796,7 @@ function toggleCrew(name) {
 // ─── FILTERS ──────────────────────────────────────────────────
 function setRaceFilter(val) {
   raceFilter = val;
-  ['all','main','mini'].forEach(v => {
+  ['all', 'main', 'mini'].forEach(v => {
     document.getElementById(`btn-${v}`).classList.toggle('active', v === val);
   });
   updateMarkerVisibility();
@@ -559,12 +816,98 @@ function setPriorityFilter(val) {
 
 function toggleCrewFilter(name) {
   crewFilter = crewFilter === name ? null : name;
-  ['jack','cody','aaron'].forEach(n => {
+  ['jack', 'cody', 'aaron'].forEach(n => {
     document.getElementById(`btn-${n}`).classList.toggle('active', n === crewFilter);
   });
   updateMarkerVisibility();
   renderSidebar();
   updateStats();
+}
+
+// ─── ADD LOCATION MODAL ───────────────────────────────────────
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  // Reset form
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-lat').value = '';
+  document.getElementById('f-lng').value = '';
+  document.getElementById('f-race-main').checked = true;
+  document.getElementById('f-race-mini').checked = false;
+  document.querySelector('input[name="f-priority"][value="standard"]').checked = true;
+  document.querySelector('input[name="f-added-by"][value="jack"]').checked = true;
+  document.getElementById('pick-hint').textContent = '';
+  if (pickMode) togglePickMode();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  if (pickMode) togglePickMode();
+}
+
+function togglePickMode() {
+  pickMode = !pickMode;
+  const btn = document.getElementById('btn-pick');
+  const hint = document.getElementById('pick-hint');
+  btn.classList.toggle('active', pickMode);
+  if (pickMode) {
+    hint.textContent = 'Click anywhere on the map to set coordinates.';
+    map.getContainer().style.cursor = 'crosshair';
+  } else {
+    hint.textContent = '';
+    map.getContainer().style.cursor = '';
+  }
+}
+
+function submitPOI() {
+  const name = document.getElementById('f-name').value.trim();
+  const lat  = parseFloat(document.getElementById('f-lat').value);
+  const lng  = parseFloat(document.getElementById('f-lng').value);
+
+  if (!name) { alert('Please enter a name.'); return; }
+  if (isNaN(lat) || isNaN(lng)) { alert('Please set coordinates (use "Pick on map" or enter manually).'); return; }
+
+  const races = [];
+  if (document.getElementById('f-race-main').checked) races.push('main');
+  if (document.getElementById('f-race-mini').checked)  races.push('mini');
+  if (races.length === 0) races.push('main');
+
+  const priority  = document.querySelector('input[name="f-priority"]:checked').value;
+  const addedBy   = document.querySelector('input[name="f-added-by"]:checked').value;
+  const section   = document.getElementById('f-section').value;
+  const desc      = document.getElementById('f-desc').value.trim();
+  const notes     = document.getElementById('f-notes').value.trim();
+
+  const newShot = {
+    id:        'u-' + Date.now(),
+    races,
+    section,
+    name,
+    coords:    [lat, lng],
+    priority,
+    miles:     {},
+    direction: '',
+    description: desc,
+    notes,
+    userAdded: true,
+    addedBy
+  };
+
+  userShots.push(newShot);
+  saveUserShots();
+
+  // Add to map and sidebar
+  const marker = createMarker(newShot);
+  markers[newShot.id] = marker;
+  if (isVisible(newShot)) marker.addTo(map);
+
+  renderSidebar();
+  updateStats();
+  closeModal();
+
+  // Pan to new location and select it
+  setTimeout(() => selectShot(newShot.id), 100);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────

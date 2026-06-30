@@ -8,28 +8,26 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --navy:   #051829;
-    --navy-2: #040e19;
-    --navy-3: #071828;
-    --border: #0d2236;
-    --border-2: #1a3550;
-    --gold:   #F49A0B;
-    --gold-dim: rgba(244,154,11,.12);
-    --blue:   #4FC3F7;
-    --green:  #81C784;
-    --text:   #FFFBF8;
-    --muted:  #7899b0;
-    --dim:    #3a5570;
+    --navy:    #051829;
+    --navy-2:  #040e19;
+    --navy-3:  #071828;
+    --border:  #0d2236;
+    --border-2:#1a3550;
+    --blue:    #4D94BF;
+    --maroon:  #A06868;
+    --cream:   #FFFBF8;
+    --amber:   #F49A0B;
+    --muted:   #7899b0;
+    --dim:     #3a5570;
   }
 
   html, body {
     min-height: 100vh;
     background: var(--navy);
-    color: var(--text);
+    color: var(--cream);
     font-family: "Arial Narrow", Arial, sans-serif;
   }
 
-  /* ── Layout ── */
   .page {
     min-height: 100vh;
     display: flex;
@@ -42,16 +40,20 @@
   /* ── Header ── */
   .header {
     text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 44px;
   }
 
   .logo-mark {
     width: 52px;
     height: 52px;
     margin: 0 auto 20px;
+    background: #040e19;
+    border: 1px solid #1a3550;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-
-  .logo-mark svg { width: 100%; height: 100%; }
 
   .eyebrow {
     font-size: 10px;
@@ -65,12 +67,12 @@
     font-size: clamp(22px, 5vw, 32px);
     font-weight: 700;
     letter-spacing: 2px;
-    color: var(--text);
+    color: var(--cream);
     text-transform: uppercase;
     line-height: 1.2;
   }
 
-  h1 span { color: var(--gold); }
+  h1 span { color: var(--amber); }
 
   .subtitle {
     margin-top: 10px;
@@ -80,22 +82,36 @@
     text-transform: uppercase;
   }
 
+  /* ── Section labels ── */
+  .section-label {
+    width: 100%;
+    max-width: 760px;
+    font-size: 9.5px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
   /* ── Tool grid ── */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
-    gap: 16px;
+    gap: 14px;
     width: 100%;
     max-width: 760px;
+    margin-bottom: 28px;
   }
 
+  /* ── Card ── */
   .card {
     display: block;
     text-decoration: none;
     background: var(--navy-2);
     border: 1px solid var(--border);
     border-radius: 4px;
-    padding: 28px 24px;
+    padding: 24px 22px;
     transition: border-color .15s, background .15s;
     position: relative;
     overflow: hidden;
@@ -106,29 +122,30 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
-    background: var(--gold);
     opacity: 0;
     transition: opacity .15s;
   }
 
-  .card:hover {
-    border-color: var(--border-2);
-    background: var(--navy-3);
-  }
+  .card.primary::before   { background: var(--blue); }
+  .card.secondary::before { background: var(--maroon); }
 
-  .card:hover::before { opacity: 1; }
+  .card:hover { border-color: var(--border-2); background: var(--navy-3); }
+  .card.primary:hover   { border-color: var(--blue); }
+  .card.secondary:hover { border-color: var(--maroon); }
+  .card:hover::before   { opacity: 1; }
 
   .card-icon {
-    font-size: 28px;
+    width: 32px;
+    height: 32px;
     margin-bottom: 14px;
-    line-height: 1;
+    opacity: .75;
   }
 
   .card-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 1.5px;
-    color: var(--text);
+    color: var(--cream);
     text-transform: uppercase;
     margin-bottom: 8px;
   }
@@ -140,11 +157,7 @@
     margin-bottom: 16px;
   }
 
-  .card-tags {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 
   .tag {
     font-size: 9.5px;
@@ -155,27 +168,75 @@
     font-weight: 700;
   }
 
-  .tag-gold  { background: rgba(244,154,11,.15); color: var(--gold); }
-  .tag-blue  { background: rgba(79,195,247,.12); color: var(--blue); }
-  .tag-green { background: rgba(129,199,132,.1); color: var(--green); }
-  .tag-dim   { background: rgba(58,85,112,.25);  color: var(--muted); }
+  .tag-blue   { background: rgba(77,148,191,.15);  color: var(--blue); }
+  .tag-maroon { background: rgba(160,104,104,.15); color: var(--maroon); }
+  .tag-dim    { background: rgba(58,85,112,.25);   color: var(--muted); }
+  .tag-cream  { background: rgba(255,251,248,.08); color: var(--cream); }
 
   .card-arrow {
     position: absolute;
-    bottom: 24px; right: 22px;
-    font-size: 18px;
+    bottom: 22px; right: 20px;
+    font-size: 16px;
     color: var(--dim);
     transition: color .15s, transform .15s;
   }
+  .card.primary:hover .card-arrow   { color: var(--blue);   transform: translateX(3px); }
+  .card.secondary:hover .card-arrow { color: var(--maroon); transform: translateX(3px); }
 
-  .card:hover .card-arrow {
-    color: var(--gold);
-    transform: translateX(3px);
+  /* ── Quick links ── */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+    width: 100%;
+    max-width: 760px;
+    margin-bottom: 36px;
+  }
+
+  .quick-card {
+    display: block;
+    text-decoration: none;
+    background: var(--navy-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    transition: border-color .15s, background .15s;
+    opacity: .35;
+    pointer-events: none;
+  }
+
+  .quick-card.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .quick-card.active:hover {
+    border-color: var(--border-2);
+    background: var(--navy-3);
+  }
+
+  .quick-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--cream);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .quick-desc {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: .3px;
+    line-height: 1.4;
   }
 
   /* ── Crew strip ── */
   .crew {
-    margin-top: 44px;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -190,10 +251,7 @@
     text-transform: uppercase;
   }
 
-  .crew-members {
-    display: flex;
-    gap: 12px;
-  }
+  .crew-members { display: flex; gap: 14px; }
 
   .crew-member {
     display: flex;
@@ -204,18 +262,13 @@
     color: var(--muted);
   }
 
-  .crew-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-  }
-
-  .dot-jack  { background: var(--gold); }
+  .crew-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-jack  { background: var(--cream); border: 1px solid rgba(255,251,248,.3); }
   .dot-cody  { background: var(--blue); }
-  .dot-aaron { background: var(--green); }
+  .dot-aaron { background: var(--maroon); }
 
-  /* ── Race date strip ── */
   .race-date {
-    margin-top: 14px;
+    margin-top: 12px;
     font-size: 10px;
     letter-spacing: 1.5px;
     color: var(--dim);
@@ -223,12 +276,12 @@
     text-align: center;
   }
 
-  .race-date strong { color: var(--gold); font-weight: 700; }
+  .race-date strong { color: var(--amber); font-weight: 700; }
 
-  /* ── Responsive ── */
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; }
-    .card { padding: 22px 18px; }
+    .quick-grid { grid-template-columns: 1fr 1fr; }
+    .card { padding: 20px 16px; }
   }
 </style>
 </head>
@@ -237,46 +290,81 @@
 
   <header class="header">
     <div class="logo-mark">
-      <!-- Mishigami M mark -->
-      <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
-        <rect width="52" height="52" fill="#040e19" rx="4"/>
-        <path d="M10 40 L10 20 L26 34 L42 20 L42 40" fill="none" stroke="#F49A0B" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg width="32" height="28" viewBox="0 0 32 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 26 L2 8 L16 20 L30 8 L30 26" stroke="#F49A0B" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
     <p class="eyebrow">Midwest Ultra Cycling</p>
     <h1>Mishigami 2026<br><span>Crew Hub</span></h1>
-    <p class="subtitle">Race coverage tools — Jack · Cody · Aaron</p>
+    <p class="subtitle">Race coverage tools &nbsp;&middot;&nbsp; Jack &nbsp;&middot;&nbsp; Cody &nbsp;&middot;&nbsp; Aaron</p>
   </header>
 
+  <div class="section-label">Tools</div>
   <div class="grid">
 
-    <a class="card" href="shot-planner/index.html">
-      <div class="card-icon">🗺️</div>
+    <a class="card primary" href="shot-planner/index.html">
+      <!-- Map / pin icon -->
+      <svg class="card-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 3C11.582 3 8 6.582 8 11c0 6.627 8 18 8 18s8-11.373 8-18c0-4.418-3.582-8-8-8z" stroke="#4D94BF" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="16" cy="11" r="3" stroke="#4D94BF" stroke-width="1.5"/>
+      </svg>
       <div class="card-title">Shot Planner</div>
       <div class="card-desc">
-        Interactive map of all coverage locations across the route. Assign shots by crew member, filter by race (Main Event or Mini-Gami), and plan your position before and during the race.
+        Interactive map of all coverage locations. Assign shots by crew member, filter by race, and add your own locations — synced across the crew.
       </div>
       <div class="card-tags">
-        <span class="tag tag-gold">47 locations</span>
+        <span class="tag tag-blue">47 locations</span>
         <span class="tag tag-dim">Main Event</span>
-        <span class="tag tag-blue">Mini-Gami</span>
-        <span class="tag tag-green">Crew assign</span>
+        <span class="tag tag-maroon">Mini-Gami</span>
+        <span class="tag tag-cream">Crew assign</span>
       </div>
-      <span class="card-arrow">→</span>
+      <span class="card-arrow">&#8594;</span>
     </a>
 
-    <a class="card" href="social-field-kit/index.html">
-      <div class="card-icon">📸</div>
+    <a class="card secondary" href="social-field-kit/index.html">
+      <!-- Camera icon -->
+      <svg class="card-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="8" width="28" height="20" rx="2" stroke="#A06868" stroke-width="1.5"/>
+        <circle cx="16" cy="18" r="5" stroke="#A06868" stroke-width="1.5"/>
+        <path d="M11 8 L13 4 L19 4 L21 8" stroke="#A06868" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="25" cy="13" r="1.5" fill="#A06868"/>
+      </svg>
       <div class="card-title">Social Field Kit</div>
       <div class="card-desc">
-        On-course social media templates for Instagram stories and posts. Add your photos, edit text, and export PNG graphics directly from your phone or laptop — no apps required.
+        On-course Instagram story and post templates. Add your photos, edit text, and export PNG graphics directly from phone or laptop.
       </div>
       <div class="card-tags">
-        <span class="tag tag-gold">Stories</span>
-        <span class="tag tag-blue">Posts</span>
+        <span class="tag tag-maroon">Stories</span>
+        <span class="tag tag-dim">Posts</span>
         <span class="tag tag-dim">Export PNG</span>
       </div>
-      <span class="card-arrow">→</span>
+      <span class="card-arrow">&#8594;</span>
+    </a>
+
+  </div>
+
+  <!-- Quick links — add href + class="quick-card active" to activate each slot -->
+  <div class="section-label">Quick Links</div>
+  <div class="quick-grid">
+
+    <a class="quick-card" href="#">
+      <div class="quick-title">Link 1</div>
+      <div class="quick-desc">Coming soon</div>
+    </a>
+
+    <a class="quick-card" href="#">
+      <div class="quick-title">Link 2</div>
+      <div class="quick-desc">Coming soon</div>
+    </a>
+
+    <a class="quick-card" href="#">
+      <div class="quick-title">Link 3</div>
+      <div class="quick-desc">Coming soon</div>
+    </a>
+
+    <a class="quick-card" href="#">
+      <div class="quick-title">Link 4</div>
+      <div class="quick-desc">Coming soon</div>
     </a>
 
   </div>
@@ -291,7 +379,7 @@
   </div>
 
   <p class="race-date">
-    <strong>Mishigami 2026</strong> &nbsp;·&nbsp; July 11, 2026 &nbsp;·&nbsp; Chicago, IL
+    <strong>Mishigami 2026</strong> &nbsp;&middot;&nbsp; July 11, 2026 &nbsp;&middot;&nbsp; Chicago, IL
   </p>
 
 </div>
