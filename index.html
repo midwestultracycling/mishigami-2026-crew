@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mishigami 2026 — Crew Hub</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #051829;
+    --navy-2: #040e19;
+    --navy-3: #071828;
+    --border: #0d2236;
+    --border-2: #1a3550;
+    --gold:   #F49A0B;
+    --gold-dim: rgba(244,154,11,.12);
+    --blue:   #4FC3F7;
+    --green:  #81C784;
+    --text:   #FFFBF8;
+    --muted:  #7899b0;
+    --dim:    #3a5570;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--navy);
+    color: var(--text);
+    font-family: "Arial Narrow", Arial, sans-serif;
+  }
+
+  /* ── Layout ── */
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .logo-mark {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 20px;
+  }
+
+  .logo-mark svg { width: 100%; height: 100%; }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+
+  h1 span { color: var(--gold); }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ── Tool grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+    gap: 16px;
+    width: 100%;
+    max-width: 760px;
+  }
+
+  .card {
+    display: block;
+    text-decoration: none;
+    background: var(--navy-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 24px;
+    transition: border-color .15s, background .15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity .15s;
+  }
+
+  .card:hover {
+    border-color: var(--border-2);
+    background: var(--navy-3);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    line-height: 1;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 9.5px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+
+  .tag-gold  { background: rgba(244,154,11,.15); color: var(--gold); }
+  .tag-blue  { background: rgba(79,195,247,.12); color: var(--blue); }
+  .tag-green { background: rgba(129,199,132,.1); color: var(--green); }
+  .tag-dim   { background: rgba(58,85,112,.25);  color: var(--muted); }
+
+  .card-arrow {
+    position: absolute;
+    bottom: 24px; right: 22px;
+    font-size: 18px;
+    color: var(--dim);
+    transition: color .15s, transform .15s;
+  }
+
+  .card:hover .card-arrow {
+    color: var(--gold);
+    transform: translateX(3px);
+  }
+
+  /* ── Crew strip ── */
+  .crew {
+    margin-top: 44px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .crew-label {
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .crew-members {
+    display: flex;
+    gap: 12px;
+  }
+
+  .crew-member {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: .5px;
+    color: var(--muted);
+  }
+
+  .crew-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-jack  { background: var(--gold); }
+  .dot-cody  { background: var(--blue); }
+  .dot-aaron { background: var(--green); }
+
+  /* ── Race date strip ── */
+  .race-date {
+    margin-top: 14px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .race-date strong { color: var(--gold); font-weight: 700; }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="logo-mark">
+      <!-- Mishigami M mark -->
+      <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+        <rect width="52" height="52" fill="#040e19" rx="4"/>
+        <path d="M10 40 L10 20 L26 34 L42 20 L42 40" fill="none" stroke="#F49A0B" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <p class="eyebrow">Midwest Ultra Cycling</p>
+    <h1>Mishigami 2026<br><span>Crew Hub</span></h1>
+    <p class="subtitle">Race coverage tools — Jack · Cody · Aaron</p>
+  </header>
+
+  <div class="grid">
+
+    <a class="card" href="shot-planner/index.html">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title">Shot Planner</div>
+      <div class="card-desc">
+        Interactive map of all coverage locations across the route. Assign shots by crew member, filter by race (Main Event or Mini-Gami), and plan your position before and during the race.
+      </div>
+      <div class="card-tags">
+        <span class="tag tag-gold">47 locations</span>
+        <span class="tag tag-dim">Main Event</span>
+        <span class="tag tag-blue">Mini-Gami</span>
+        <span class="tag tag-green">Crew assign</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <a class="card" href="social-field-kit/index.html">
+      <div class="card-icon">📸</div>
+      <div class="card-title">Social Field Kit</div>
+      <div class="card-desc">
+        On-course social media templates for Instagram stories and posts. Add your photos, edit text, and export PNG graphics directly from your phone or laptop — no apps required.
+      </div>
+      <div class="card-tags">
+        <span class="tag tag-gold">Stories</span>
+        <span class="tag tag-blue">Posts</span>
+        <span class="tag tag-dim">Export PNG</span>
+      </div>
+      <span class="card-arrow">→</span>
+    </a>
+
+  </div>
+
+  <div class="crew">
+    <span class="crew-label">Crew</span>
+    <div class="crew-members">
+      <span class="crew-member"><span class="crew-dot dot-jack"></span>Jack</span>
+      <span class="crew-member"><span class="crew-dot dot-cody"></span>Cody</span>
+      <span class="crew-member"><span class="crew-dot dot-aaron"></span>Aaron</span>
+    </div>
+  </div>
+
+  <p class="race-date">
+    <strong>Mishigami 2026</strong> &nbsp;·&nbsp; July 11, 2026 &nbsp;·&nbsp; Chicago, IL
+  </p>
+
+</div>
+</body>
+</html>
