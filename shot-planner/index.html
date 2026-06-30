@@ -44,6 +44,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .btn.crew-jack.active{border-color:#FFFBF8;color:#FFFBF8;background:rgba(255,251,248,.1)}
 .btn.crew-cody.active{border-color:#4D94BF;color:#4D94BF;background:rgba(77,148,191,.12)}
 .btn.crew-aaron.active{border-color:#A06868;color:#A06868;background:rgba(160,104,104,.12)}
+.btn.crew-monica.active{border-color:#F49A0B;color:#F49A0B;background:rgba(244,154,11,.12)}
 .btn-add{border-color:#4D94BF;color:#4D94BF;margin-left:auto}
 .btn-add:hover{background:rgba(77,148,191,.1);color:#FFFBF8}
 .stats{font-size:10px;color:#3a5570;letter-spacing:.5px;white-space:nowrap}
@@ -79,6 +80,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .dot-jack{background:#FFFBF8}
 .dot-cody{background:#4D94BF}
 .dot-aaron{background:#A06868}
+.dot-monica{background:#F49A0B}
 
 /* priority indicators (no emoji) */
 .prio-diamond{display:inline-block;width:8px;height:8px;background:#F49A0B;transform:rotate(45deg);flex-shrink:0}
@@ -120,6 +122,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
 .crew-btn-jack.on{color:#FFFBF8;border-color:#FFFBF8;background:rgba(255,251,248,.1)}
 .crew-btn-cody.on{color:#4D94BF;border-color:#4D94BF;background:rgba(77,148,191,.12)}
 .crew-btn-aaron.on{color:#A06868;border-color:#A06868;background:rgba(160,104,104,.12)}
+.crew-btn-monica.on{color:#F49A0B;border-color:#F49A0B;background:rgba(244,154,11,.12)}
 
 /* ── SYNC STATUS ── */
 #sync-status{font-size:9px;letter-spacing:.5px;color:#2a4560;padding:4px 12px;border-bottom:1px solid #071624;min-height:18px}
@@ -206,6 +209,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
       <button class="btn crew-jack" id="btn-jack" onclick="toggleCrewFilter('jack')">Jack</button>
       <button class="btn crew-cody" id="btn-cody" onclick="toggleCrewFilter('cody')">Cody</button>
       <button class="btn crew-aaron" id="btn-aaron" onclick="toggleCrewFilter('aaron')">Aaron</button>
+      <button class="btn crew-monica" id="btn-monica" onclick="toggleCrewFilter('monica')">Monica</button>
     </div>
   </div>
 
@@ -253,6 +257,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
           <button class="crew-btn crew-btn-jack" id="crew-jack" onclick="toggleCrew('jack')">Jack</button>
           <button class="crew-btn crew-btn-cody" id="crew-cody" onclick="toggleCrew('cody')">Cody</button>
           <button class="crew-btn crew-btn-aaron" id="crew-aaron" onclick="toggleCrew('aaron')">Aaron</button>
+          <button class="crew-btn crew-btn-monica" id="crew-monica" onclick="toggleCrew('monica')">Monica</button>
         </div>
       </div>
     </div>
@@ -337,6 +342,7 @@ html,body{height:100%;overflow:hidden;background:#051829;color:#FFFBF8;font-fami
           <label><input type="radio" name="f-added-by" value="jack" checked> Jack</label>
           <label><input type="radio" name="f-added-by" value="cody"> Cody</label>
           <label><input type="radio" name="f-added-by" value="aaron"> Aaron</label>
+          <label><input type="radio" name="f-added-by" value="monica"> Monica</label>
         </div>
       </div>
     </div>
@@ -763,7 +769,7 @@ function showDetail(shot) {
   document.getElementById('detail-description').textContent = shot.description || '—';
   document.getElementById('detail-notes').textContent = shot.notes || '—';
 
-  ['jack', 'cody', 'aaron'].forEach(name => {
+  ['jack', 'cody', 'aaron', 'monica'].forEach(name => {
     document.getElementById(`crew-${name}`).classList.toggle('on', crew.includes(name));
   });
 
@@ -827,7 +833,7 @@ function setPriorityFilter(val) {
 
 function toggleCrewFilter(name) {
   crewFilter = crewFilter === name ? null : name;
-  ['jack', 'cody', 'aaron'].forEach(n => {
+  ['jack', 'cody', 'aaron', 'monica'].forEach(n => {
     document.getElementById(`btn-${n}`).classList.toggle('active', n === crewFilter);
   });
   updateMarkerVisibility();
@@ -880,11 +886,21 @@ function togglePickMode() {
 }
 
 function parseCoordsString(val) {
-  // Parses "41.8781, -87.6298" or "41.8781,-87.6298" from Google Maps copy
-  const match = val.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
-  if (match) {
-    document.getElementById('f-lat').value = parseFloat(match[1]).toFixed(6);
-    document.getElementById('f-lng').value = parseFloat(match[2]).toFixed(6);
+  // DMS format: 42°06'47.7"N 88°01'47.5"W (Google Maps right-click on some views)
+  const dms = val.match(/(\d+)°(\d+)'([\d.]+)"([NS])[,\s]+(\d+)°(\d+)'([\d.]+)"([EW])/);
+  if (dms) {
+    const lat = (parseFloat(dms[1]) + parseFloat(dms[2])/60 + parseFloat(dms[3])/3600) * (dms[4]==='S' ? -1 : 1);
+    const lng = (parseFloat(dms[5]) + parseFloat(dms[6])/60 + parseFloat(dms[7])/3600) * (dms[8]==='W' ? -1 : 1);
+    document.getElementById('f-lat').value = lat.toFixed(6);
+    document.getElementById('f-lng').value = lng.toFixed(6);
+    document.getElementById('pick-hint').textContent = 'Coordinates parsed.';
+    return;
+  }
+  // Decimal format: 41.8781, -87.6298
+  const decimal = val.match(/(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/);
+  if (decimal) {
+    document.getElementById('f-lat').value = parseFloat(decimal[1]).toFixed(6);
+    document.getElementById('f-lng').value = parseFloat(decimal[2]).toFixed(6);
     document.getElementById('pick-hint').textContent = 'Coordinates parsed.';
   } else {
     document.getElementById('pick-hint').textContent = '';
