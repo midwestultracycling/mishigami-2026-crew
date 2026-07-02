@@ -126,10 +126,12 @@
 
   .card.primary::before   { background: var(--blue); }
   .card.secondary::before { background: var(--maroon); }
+  .card.tertiary::before  { background: var(--amber); }
 
   .card:hover { border-color: var(--border-2); background: var(--navy-3); }
   .card.primary:hover   { border-color: var(--blue); }
   .card.secondary:hover { border-color: var(--maroon); }
+  .card.tertiary:hover  { border-color: var(--amber); }
   .card:hover::before   { opacity: 1; }
 
   .card-icon {
@@ -168,6 +170,7 @@
 
   .tag-blue   { background: rgba(77,148,191,.15);  color: var(--blue); }
   .tag-maroon { background: rgba(160,104,104,.15); color: var(--maroon); }
+  .tag-amber  { background: rgba(244,154,11,.15);  color: var(--amber); }
   .tag-dim    { background: rgba(58,85,112,.25);   color: var(--muted); }
   .tag-cream  { background: rgba(255,251,248,.08); color: var(--cream); }
 
@@ -180,6 +183,7 @@
   }
   .card.primary:hover .card-arrow   { color: var(--blue);   transform: translateX(3px); }
   .card.secondary:hover .card-arrow { color: var(--maroon); transform: translateX(3px); }
+  .card.tertiary:hover .card-arrow  { color: var(--amber);  transform: translateX(3px); }
 
   /* ── Quick links ── */
   .quick-grid {
@@ -334,6 +338,30 @@
         <span class="tag tag-maroon">Stories</span>
         <span class="tag tag-dim">Posts</span>
         <span class="tag tag-dim">Export PNG</span>
+      </div>
+      <span class="card-arrow">&#8594;</span>
+    </a>
+
+    <a class="card tertiary" href="audiogram/index.html">
+      <!-- Waveform / audio icon -->
+      <svg class="card-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 16 L4 16" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 12 L8 20" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M12 8 L12 24" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M16 10 L16 22" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M20 7 L20 25" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M24 11 L24 21" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M28 14 L28 18" stroke="#F49A0B" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="card-title">Audiogram</div>
+      <div class="card-desc">
+        Drop a sound bite + photo and generate a Mishigami-branded audiogram video, ready to share to Instagram. Works on desktop and Android — screen record on iPhone.
+      </div>
+      <div class="card-tags">
+        <span class="tag tag-amber">Feed 4:5</span>
+        <span class="tag tag-dim">Story 9:16</span>
+        <span class="tag tag-dim">Square</span>
+        <span class="tag tag-dim">Export video</span>
       </div>
       <span class="card-arrow">&#8594;</span>
     </a>
