@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mishigami 2026 — Race Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #051829;
+    --navy-2:  #040e19;
+    --navy-3:  #071828;
+    --border:  #0d2236;
+    --border-2:#1a3550;
+    --blue:    #4D94BF;
+    --maroon:  #A06868;
+    --cream:   #FFFBF8;
+    --amber:   #F49A0B;
+    --muted:   #7899b0;
+    --dim:     #3a5570;
+    --red:     #c85a5a;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--navy);
+    color: var(--cream);
+    font-family: "Arial Narrow", Arial, sans-serif;
+  }
+
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 60px;
+  }
+
+  .wrap { width: 100%; max-width: 980px; }
+
+  /* Header */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .back-link:hover { color: var(--cream); }
+
+  .header { text-align: center; margin-bottom: 28px; }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(22px, 5vw, 32px);
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--cream);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  h1 span { color: var(--amber); }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 9.5px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  .panel {
+    background: var(--navy-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 22px;
+  }
+
+  /* Control bar */
+  .control-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  .mode-toggle {
+    display: flex;
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mode-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .mode-btn.active { background: var(--blue); color: var(--navy-2); font-weight: 700; }
+  .mode-btn:not(.active):hover { color: var(--cream); }
+
+  .status-line {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .3px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--dim);
+    margin-right: 5px;
+  }
+  .status-dot.ok { background: #6fbf73; }
+  .status-dot.err { background: var(--red); }
+
+  .btn {
+    background: var(--navy-3);
+    border: 1px solid var(--border-2);
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .btn:hover { border-color: var(--blue); background: var(--navy); }
+  .btn.primary { background: var(--blue); color: var(--navy-2); font-weight: 700; border-color: var(--blue); }
+  .btn.primary:hover { background: #5aa2cc; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+  .error-banner {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(200,90,90,.12);
+    border: 1px solid rgba(200,90,90,.4);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #e3a2a2;
+    line-height: 1.6;
+  }
+  .error-banner.show { display: block; }
+  .error-banner strong { color: var(--cream); }
+
+  .info-banner {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(244,154,11,.10);
+    border: 1px solid rgba(244,154,11,.35);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #f0c986;
+    line-height: 1.6;
+  }
+  .info-banner.show { display: block; }
+
+  /* Stat cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--navy-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--cream);
+    letter-spacing: .5px;
+  }
+  .stat-label {
+    margin-top: 4px;
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .stat-card.blue .stat-value { color: var(--blue); }
+  .stat-card.amber .stat-value { color: var(--amber); }
+  .stat-card.maroon .stat-value { color: var(--maroon); }
+
+  /* Recap panel */
+  .recap-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  select {
+    background: var(--navy-3);
+    border: 1px solid var(--border-2);
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: .5px;
+    padding: 8px 10px;
+    border-radius: 4px;
+  }
+
+  .recap-highlights {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .highlight-card {
+    background: var(--navy-3);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--amber);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+  .highlight-title {
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .highlight-body { font-size: 12.5px; color: var(--cream); line-height: 1.5; }
+  .highlight-body b { color: var(--amber); }
+
+  textarea.recap-text {
+    width: 100%;
+    min-height: 130px;
+    background: var(--navy-3);
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    color: var(--cream);
+    font-family: "Arial Narrow", Arial, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.6;
+    padding: 12px;
+    resize: vertical;
+  }
+
+  .recap-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .toast {
+    display: none;
+    font-size: 11px;
+    color: #6fbf73;
+    letter-spacing: .5px;
+    align-self: center;
+  }
+  .toast.show { display: inline-block; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 9px 10px; text-align: left; white-space: nowrap; }
+  thead th {
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--dim);
+    border-bottom: 1px solid var(--border-2);
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--cream); }
+  thead th.sorted { color: var(--amber); }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: var(--navy-3); }
+  tbody tr.stalled { background: rgba(200,90,90,.08); }
+
+  .pill {
+    display: inline-block;
+    font-size: 9.5px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 700;
+  }
+  .pill-active  { background: rgba(77,148,191,.15);  color: var(--blue); }
+  .pill-finished{ background: rgba(244,154,11,.15);  color: var(--amber); }
+  .pill-dnf     { background: rgba(160,104,104,.2);  color: var(--maroon); }
+  .pill-other   { background: rgba(58,85,112,.25);   color: var(--muted); }
+
+  .stall-flag { color: var(--red); margin-right: 4px; }
+  .muted-cell { color: var(--dim); }
+
+  .footer-note {
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--dim);
+    text-align: center;
+    letter-spacing: .5px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 620px) {
+    .control-bar { flex-direction: column; align-items: stretch; }
+    .status-line { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="wrap">
+
+    <a class="back-link" href="../index.html">&#8592; Crew Hub</a>
+
+    <header class="header">
+      <p class="eyebrow">Midwest Ultra Cycling</p>
+      <h1>Mishigami 2026<br><span>Race Dashboard</span></h1>
+      <p class="subtitle">Live field status &amp; overnight recap</p>
+    </header>
+
+    <div class="panel">
+      <div class="control-bar">
+        <div class="mode-toggle" role="group" aria-label="Data source">
+          <button class="mode-btn" id="btn-mode-live" type="button">Live Event</button>
+          <button class="mode-btn" id="btn-mode-test" type="button">Test Data</button>
+        </div>
+        <div class="status-line">
+          <span><span class="status-dot" id="status-dot"></span><span id="status-text">Not loaded yet</span></span>
+          <span id="countdown-text"></span>
+        </div>
+        <button class="btn primary" id="btn-refresh" type="button">Refresh Now</button>
+      </div>
+      <div class="error-banner" id="error-banner"></div>
+      <div class="info-banner" id="info-banner"></div>
+    </div>
+
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Riders</div></div>
+      <div class="stat-card blue"><div class="stat-value" id="stat-active">—</div><div class="stat-label">Active</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-moving">—</div><div class="stat-label">Moving</div></div>
+      <div class="stat-card maroon"><div class="stat-value" id="stat-stopped">—</div><div class="stat-label">Stopped</div></div>
+      <div class="stat-card amber"><div class="stat-value" id="stat-finished">—</div><div class="stat-label">Finished</div></div>
+      <div class="stat-card maroon"><div class="stat-value" id="stat-dnf">—</div><div class="stat-label">DNF / DNS / DSQ</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="section-label">Overnight Recap</div>
+      <div class="recap-controls">
+        <span style="font-size:11px; color:var(--muted); letter-spacing:.5px;">Since</span>
+        <select id="recap-since">
+          <option value="6">Last 6 hours</option>
+          <option value="12" selected>Last 12 hours</option>
+          <option value="24">Last 24 hours</option>
+          <option value="graddepart">Since Grand Depart</option>
+        </select>
+        <button class="btn" id="btn-recompute-recap" type="button">Recompute</button>
+      </div>
+
+      <div class="recap-highlights" id="recap-highlights"></div>
+
+      <textarea class="recap-text" id="recap-text" readonly placeholder="Recap text will appear here once there's enough history to compare against."></textarea>
+
+      <div class="recap-actions">
+        <button class="btn primary" id="btn-copy-recap" type="button">Copy Recap Text</button>
+        <button class="btn" id="btn-download-graphic" type="button">Download Recap Graphic (PNG)</button>
+        <span class="toast" id="toast">Copied</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="section-label">Field Status</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="name">Rider</th>
+              <th data-key="startNumber">Bib</th>
+              <th data-key="status">Status</th>
+              <th data-key="distance">Distance</th>
+              <th data-key="speed">Speed</th>
+              <th data-key="lastUpdateUnix">Last Update</th>
+              <th data-key="checkpoint">Nearest CP</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <tr><td colspan="7" class="muted-cell">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="footer-note">
+      Polls the FMC feed every 5 minutes. History is stored locally in this browser —<br>
+      switching devices starts a fresh recap baseline. If the feed stops responding (network<br>
+      or 403 errors), it may be Cloudflare bot protection on FMC's end — send Tedde the polling<br>
+      device's IP for whitelisting.
+    </p>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Config ──────────────────────────────────────────────
+  var CONFIG = {
+    liveUrl: 'https://www.followmychallenge.com/live/mishigamichallenge2026/api/midwestultracycling/?key=yozfDT0rytvkGQfQEuJMqOFrbrLlr6yI',
+    testUrl: 'https://www.followmychallenge.com/live/bright-midnight-2026/api/midwestultracycling/?key=yozfDT0rytvkGQfQEuJMqOFrbrLlr6yI',
+    pollMs: 5 * 60 * 1000,       // 5 minutes, per Tedde's guidance
+    staleMinutes: 20,             // flag "active + not moving" riders idle longer than this
+    historyKey: 'mishigami2026_dashboard_history_v1',
+    modeKey: 'mishigami2026_dashboard_mode_v1',
+    historyMaxHours: 96,
+    minSnapshotGapMin: 4,
+    grandDepartUtc: '2026-07-11T11:00:00Z' // 6:00 AM CDT
+  };
+
+  // ── State ───────────────────────────────────────────────
+  var state = {
+    mode: localStorage.getItem(CONFIG.modeKey) || 'live',
+    riders: [],
+    generated: null,
+    sortKey: 'distance',
+    sortDir: 'desc',
+    countdownSec: 0,
+    pollTimer: null,
+    countdownTimer: null
+  };
+
+  // ── DOM refs ────────────────────────────────────────────
+  var el = {
+    btnLive: document.getElementById('btn-mode-live'),
+    btnTest: document.getElementById('btn-mode-test'),
+    statusDot: document.getElementById('status-dot'),
+    statusText: document.getElementById('status-text'),
+    countdown: document.getElementById('countdown-text'),
+    btnRefresh: document.getElementById('btn-refresh'),
+    errorBanner: document.getElementById('error-banner'),
+    infoBanner: document.getElementById('info-banner'),
+    statTotal: document.getElementById('stat-total'),
+    statActive: document.getElementById('stat-active'),
+    statMoving: document.getElementById('stat-moving'),
+    statStopped: document.getElementById('stat-stopped'),
+    statFinished: document.getElementById('stat-finished'),
+    statDnf: document.getElementById('stat-dnf'),
+    tableBody: document.getElementById('table-body'),
+    recapSince: document.getElementById('recap-since'),
+    btnRecompute: document.getElementById('btn-recompute-recap'),
+    recapHighlights: document.getElementById('recap-highlights'),
+    recapText: document.getElementById('recap-text'),
+    btnCopyRecap: document.getElementById('btn-copy-recap'),
+    btnDownloadGraphic: document.getElementById('btn-download-graphic'),
+    toast: document.getElementById('toast')
+  };
+
+  // ── Helpers ─────────────────────────────────────────────
+  function nowUnix() { return Math.floor(Date.now() / 1000); }
+
+  function relativeTime(unixSec) {
+    if (!unixSec) return '—';
+    var diff = nowUnix() - unixSec;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ' + Math.floor((diff % 3600) / 60) + 'm ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  }
+
+  function statusPillClass(status) {
+    if (status === 'active') return 'pill-active';
+    if (status === 'finished') return 'pill-finished';
+    if (status === 'dnf' || status === 'dsq' || status === 'dns') return 'pill-dnf';
+    return 'pill-other';
+  }
+
+  function fmtDist(d, unit) {
+    if (d === null || d === undefined) return '—';
+    return d.toFixed(1) + ' ' + (unit || 'mi');
+  }
+
+  function fmtSpeed(s, unit) {
+    if (s === null || s === undefined) return '—';
+    return s.toFixed(1) + ' ' + (unit || 'mph');
+  }
+
+  function showError(msg) {
+    el.errorBanner.innerHTML = msg;
+    el.errorBanner.classList.add('show');
+  }
+  function clearError() { el.errorBanner.classList.remove('show'); el.errorBanner.innerHTML = ''; }
+  function showInfo(msg) {
+    el.infoBanner.innerHTML = msg;
+    el.infoBanner.classList.add('show');
+  }
+  function clearInfo() { el.infoBanner.classList.remove('show'); el.infoBanner.innerHTML = ''; }
+
+  // ── History (localStorage) ─────────────────────────────
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(CONFIG.historyKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function saveSnapshot(data) {
+    var history = loadHistory();
+    var t = nowUnix();
+    var last = history[history.length - 1];
+    if (last && (t - last.t) < CONFIG.minSnapshotGapMin * 60) return; // throttle
+
+    var ridersMap = {};
+    (data.riders || []).forEach(function (r) {
+      ridersMap[r.id] = { distance: r.distance || 0, name: r.name, startNumber: r.startNumber };
+    });
+    history.push({ t: t, riders: ridersMap });
+
+    var cutoff = t - CONFIG.historyMaxHours * 3600;
+    history = history.filter(function (h) { return h.t >= cutoff; });
+
+    try { localStorage.setItem(CONFIG.historyKey, JSON.stringify(history)); } catch (e) { /* storage full — ignore */ }
+  }
+
+  function getSnapshotNear(targetUnix) {
+    var history = loadHistory();
+    if (!history.length) return null;
+    // find the entry closest to (and at or before) targetUnix; fall back to the earliest available
+    var best = null;
+    for (var i = 0; i < history.length; i++) {
+      if (history[i].t <= targetUnix) best = history[i];
+    }
+    return best || history[0];
+  }
+
+  // ── Fetch ───────────────────────────────────────────────
+  function currentUrl() {
+    return state.mode === 'test' ? CONFIG.testUrl : CONFIG.liveUrl;
+  }
+
+  function setStatus(ok, text) {
+    el.statusDot.className = 'status-dot ' + (ok === null ? '' : (ok ? 'ok' : 'err'));
+    el.statusText.textContent = text;
+  }
+
+  function fetchData(isManual) {
+    setStatus(null, 'Refreshing…');
+    el.btnRefresh.disabled = true;
+    clearError();
+
+    fetch(currentUrl(), { method: 'GET', mode: 'cors', credentials: 'omit' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        state.riders = data.riders || [];
+        state.units = data.units || { distance: 'mi', speed: 'mph' };
+        state.generated = data.generated || new Date().toISOString();
+
+        if (state.mode === 'live' && state.riders.length === 0) {
+          showInfo('<strong>No active riders yet.</strong> The live feed is connected but trackers haven\'t reported in — normal before Grand Depart. Switch to <strong>Test Data</strong> to preview the dashboard with a live event in the meantime.');
+        } else {
+          clearInfo();
+        }
+
+        saveSnapshot(data);
+        setStatus(true, 'Updated ' + new Date().toLocaleTimeString());
+        render();
+        computeRecap();
+        resetCountdown();
+      })
+      .catch(function (err) {
+        setStatus(false, 'Fetch failed');
+        showError('<strong>Couldn\'t reach the tracking feed.</strong> (' + err.message + ') If this keeps happening, it may be Cloudflare bot protection on FMC\'s end — reply to the Tedde thread with this device\'s public IP (search "what is my ip") so it can be whitelisted. Otherwise, hit Refresh Now to retry.');
+      })
+      .finally(function () {
+        el.btnRefresh.disabled = false;
+      });
+  }
+
+  function resetCountdown() {
+    state.countdownSec = CONFIG.pollMs / 1000;
+  }
+
+  // ── Render table ────────────────────────────────────────
+  function sortedRiders() {
+    var arr = state.riders.slice();
+    var key = state.sortKey, dir = state.sortDir;
+    arr.sort(function (a, b) {
+      var av, bv;
+      if (key === 'checkpoint') {
+        av = (a.nearestCheckpoint && a.nearestCheckpoint.distance) || 0;
+        bv = (b.nearestCheckpoint && b.nearestCheckpoint.distance) || 0;
+      } else {
+        av = a[key]; bv = b[key];
+      }
+      if (av === null || av === undefined) av = -Infinity;
+      if (bv === null || bv === undefined) bv = -Infinity;
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = (bv || '').toLowerCase(); }
+      if (av < bv) return dir === 'asc' ? -1 : 1;
+      if (av > bv) return dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }
+
+  function render() {
+    // stats
+    var total = state.riders.length;
+    var active = state.riders.filter(function (r) { return r.status === 'active'; });
+    var moving = active.filter(function (r) { return r.moving; });
+    var stopped = active.filter(function (r) { return !r.moving; });
+    var finished = state.riders.filter(function (r) { return r.status === 'finished'; });
+    var dnf = state.riders.filter(function (r) { return ['dnf', 'dns', 'dsq'].indexOf(r.status) !== -1; });
+
+    el.statTotal.textContent = total;
+    el.statActive.textContent = active.length;
+    el.statMoving.textContent = moving.length;
+    el.statStopped.textContent = stopped.length;
+    el.statFinished.textContent = finished.length;
+    el.statDnf.textContent = dnf.length;
+
+    // table
+    var rows = sortedRiders();
+    if (!rows.length) {
+      el.tableBody.innerHTML = '<tr><td colspan="7" class="muted-cell">No rider data yet.</td></tr>';
+    } else {
+      var unit = state.units || { distance: 'mi', speed: 'mph' };
+      el.tableBody.innerHTML = rows.map(function (r) {
+        var stalled = r.status === 'active' && r.moving === false && r.lastUpdateUnix &&
+          (nowUnix() - r.lastUpdateUnix) / 60 > CONFIG.staleMinutes;
+        var cp = r.nearestCheckpoint ? (r.nearestCheckpoint.name + ' (' + r.nearestCheckpoint.distance.toFixed(1) + ' ' + unit.distance + ')') : '—';
+        return '<tr class="' + (stalled ? 'stalled' : '') + '">' +
+          '<td>' + (stalled ? '<span class="stall-flag" title="Active, not moving, no update in over ' + CONFIG.staleMinutes + ' min">&#9888;</span>' : '') + escapeHtml(r.name || '—') + '</td>' +
+          '<td>' + escapeHtml(r.startNumber || '—') + '</td>' +
+          '<td><span class="pill ' + statusPillClass(r.status) + '">' + escapeHtml(r.status || '—') + '</span></td>' +
+          '<td>' + fmtDist(r.distance, unit.distance) + '</td>' +
+          '<td>' + fmtSpeed(r.speed, unit.speed) + '</td>' +
+          '<td>' + relativeTime(r.lastUpdateUnix) + '</td>' +
+          '<td>' + escapeHtml(cp) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    // sort header highlight
+    document.querySelectorAll('thead th').forEach(function (th) {
+      th.classList.toggle('sorted', th.dataset.key === state.sortKey);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // ── Recap ───────────────────────────────────────────────
+  var lastRecap = null;
+
+  function targetUnixForSince(val) {
+    if (val === 'graddepart') {
+      return Math.floor(new Date(CONFIG.grandDepartUtc).getTime() / 1000);
+    }
+    return nowUnix() - parseInt(val, 10) * 3600;
+  }
+
+  function computeRecap() {
+    var since = el.recapSince.value;
+    var targetUnix = targetUnixForSince(since);
+    var history = loadHistory();
+    var snapshot = getSnapshotNear(targetUnix);
+
+    if (!snapshot || history.length < 2 || !state.riders.length) {
+      el.recapHighlights.innerHTML = '<div class="highlight-card"><div class="highlight-title">Not enough history</div><div class="highlight-body">Keep this dashboard open (or check back after a few polling cycles) to build up enough snapshots to compare against.</div></div>';
+      el.recapText.value = '';
+      lastRecap = null;
+      return;
+    }
+
+    var unit = state.units || { distance: 'mi', speed: 'mph' };
+    var active = state.riders.filter(function (r) { return r.status === 'active'; });
+
+    // deltas since snapshot
+    var deltas = active.map(function (r) {
+      var prev = snapshot.riders[r.id];
+      var prevDist = prev ? prev.distance : null;
+      var gained = (prevDist !== null && r.distance !== null) ? (r.distance - prevDist) : null;
+      return { rider: r, gained: gained };
+    }).filter(function (d) { return d.gained !== null; });
+
+    deltas.sort(function (a, b) { return b.gained - a.gained; });
+    var biggestMover = deltas[0] || null;
+
+    // leader now vs leader at snapshot
+    var leaderNow = active.slice().sort(function (a, b) { return (b.distance || 0) - (a.distance || 0); })[0];
+    var snapshotRiderIds = Object.keys(snapshot.riders);
+    var leaderThenId = snapshotRiderIds.sort(function (a, b) {
+      return (snapshot.riders[b].distance || 0) - (snapshot.riders[a].distance || 0);
+    })[0];
+    var leaderThenName = leaderThenId && snapshot.riders[leaderThenId] ? snapshot.riders[leaderThenId].name : null;
+    var leadChanged = leaderNow && leaderThenName && leaderNow.name !== leaderThenName;
+
+    // tightest gap among active riders
+    var byDistance = active.slice().sort(function (a, b) { return (b.distance || 0) - (a.distance || 0); });
+    var tightest = null;
+    for (var i = 0; i < byDistance.length - 1; i++) {
+      var gap = (byDistance[i].distance || 0) - (byDistance[i + 1].distance || 0);
+      if (tightest === null || gap < tightest.gap) {
+        tightest = { a: byDistance[i], b: byDistance[i + 1], gap: gap };
+      }
+    }
+
+    var stoppedNow = active.filter(function (r) { return !r.moving; });
+
+    lastRecap = { biggestMover: biggestMover, leaderNow: leaderNow, leadChanged: leadChanged, tightest: tightest, stoppedNow: stoppedNow, unit: unit, sinceLabel: el.recapSince.options[el.recapSince.selectedIndex].text };
+
+    // highlight cards
+    var cards = [];
+    if (biggestMover) {
+      cards.push(hCard('Biggest Mover', '<b>' + escapeHtml(biggestMover.rider.name) + '</b> covered ' + biggestMover.gained.toFixed(1) + ' ' + unit.distance + ' — most of any rider ' + lastRecap.sinceLabel.toLowerCase() + '.'));
+    }
+    if (leaderNow) {
+      cards.push(hCard('Current Leader', '<b>' + escapeHtml(leaderNow.name) + '</b>' + (leadChanged ? ' — new leader ' + lastRecap.sinceLabel.toLowerCase() + ' (was ' + escapeHtml(leaderThenName) + ')' : ', holding the lead ' + lastRecap.sinceLabel.toLowerCase() + '.')));
+    }
+    if (tightest) {
+      cards.push(hCard('Tightest Gap', '<b>' + escapeHtml(tightest.a.name) + '</b> and <b>' + escapeHtml(tightest.b.name) + '</b> — just ' + tightest.gap.toFixed(1) + ' ' + unit.distance + ' apart.'));
+    }
+    cards.push(hCard('Currently Stopped', stoppedNow.length + ' active rider' + (stoppedNow.length === 1 ? '' : 's') + ' showing no movement right now.'));
+    el.recapHighlights.innerHTML = cards.join('');
+
+    el.recapText.value = generateRecapText(lastRecap);
+  }
+
+  function hCard(title, body) {
+    return '<div class="highlight-card"><div class="highlight-title">' + title + '</div><div class="highlight-body">' + body + '</div></div>';
+  }
+
+  function generateRecapText(r) {
+    var lines = [];
+    lines.push('MISHIGAMI 2026 — RECAP (' + r.sinceLabel + ')');
+    lines.push('');
+    if (r.biggestMover) {
+      lines.push(r.biggestMover.rider.name + ' put down the most ground — ' + r.biggestMover.gained.toFixed(1) + ' ' + r.unit.distance + ' ' + r.sinceLabel.toLowerCase() + '.');
+    }
+    if (r.leaderNow) {
+      lines.push(r.leaderNow.name + ' currently leads the field' + (r.leadChanged ? ' after a lead change ' + r.sinceLabel.toLowerCase() + '.' : '.'));
+    }
+    if (r.tightest) {
+      lines.push(r.tightest.a.name + ' and ' + r.tightest.b.name + ' are separated by just ' + r.tightest.gap.toFixed(1) + ' ' + r.unit.distance + '.');
+    }
+    lines.push(r.stoppedNow.length + ' rider' + (r.stoppedNow.length === 1 ? ' is' : 's are') + ' currently stopped.');
+    return lines.join('\n');
+  }
+
+  function copyRecapText() {
+    var text = el.recapText.value;
+    if (!text) return;
+    var done = function () {
+      el.toast.classList.add('show');
+      setTimeout(function () { el.toast.classList.remove('show'); }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+  }
+
+  // ── Recap graphic (canvas → PNG) ────────────────────────
+  function downloadRecapGraphic() {
+    if (!lastRecap) return;
+
+    var W = 1080, H = 1350;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // background
+    ctx.fillStyle = '#051829';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(255,251,248,0.08)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, 30, W - 60, H - 60);
+
+    ctx.textAlign = 'center';
+
+    // eyebrow
+    ctx.fillStyle = '#3a5570';
+    ctx.font = '28px "Arial Narrow", Arial, sans-serif';
+    ctx.fillText('MIDWEST ULTRA CYCLING', W / 2, 140);
+
+    // title
+    ctx.fillStyle = '#FFFBF8';
+    ctx.font = 'bold 64px "Arial Narrow", Arial, sans-serif';
+    ctx.fillText('MISHIGAMI 2026', W / 2, 215);
+
+    ctx.fillStyle = '#F49A0B';
+    ctx.font = 'bold 40px "Arial Narrow", Arial, sans-serif';
+    ctx.fillText('OVERNIGHT RECAP', W / 2, 265);
+
+    ctx.fillStyle = '#7899b0';
+    ctx.font = '26px "Arial Narrow", Arial, sans-serif';
+    ctx.fillText(lastRecap.sinceLabel.toUpperCase(), W / 2, 305);
+
+    var y = 400;
+    function block(label, value, color) {
+      ctx.fillStyle = '#3a5570';
+      ctx.font = '22px "Arial Narrow", Arial, sans-serif';
+      ctx.fillText(label, W / 2, y);
+      y += 44;
+      ctx.fillStyle = color || '#FFFBF8';
+      ctx.font = 'bold 34px "Arial Narrow", Arial, sans-serif';
+      wrapText(ctx, value, W / 2, y, W - 160, 40);
+      y += 90;
+    }
+
+    if (lastRecap.biggestMover) {
+      block('BIGGEST MOVER', lastRecap.biggestMover.rider.name + ' — ' + lastRecap.biggestMover.gained.toFixed(1) + ' ' + lastRecap.unit.distance, '#4D94BF');
+    }
+    if (lastRecap.leaderNow) {
+      block('CURRENT LEADER', lastRecap.leaderNow.name, '#F49A0B');
+    }
+    if (lastRecap.tightest) {
+      block('TIGHTEST GAP', lastRecap.tightest.a.name + ' / ' + lastRecap.tightest.b.name + ' — ' + lastRecap.tightest.gap.toFixed(1) + ' ' + lastRecap.unit.distance, '#A06868');
+    }
+    block('CURRENTLY STOPPED', String(lastRecap.stoppedNow.length) + ' rider' + (lastRecap.stoppedNow.length === 1 ? '' : 's'), '#FFFBF8');
+
+    ctx.fillStyle = '#3a5570';
+    ctx.font = '20px "Arial Narrow", Arial, sans-serif';
+    ctx.fillText('@mishigamichallenge  ·  midwestultracycling.com', W / 2, H - 60);
+
+    canvas.toBlob(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'mishigami-2026-recap-' + new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-') + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    }, 'image/png');
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(' ');
+    var line = '';
+    var lines = [];
+    for (var n = 0; n < words.length; n++) {
+      var test = line + words[n] + ' ';
+      if (ctx.measureText(test).width > maxWidth && n > 0) {
+        lines.push(line);
+        line = words[n] + ' ';
+      } else {
+        line = test;
+      }
+    }
+    lines.push(line);
+    var startY = y - ((lines.length - 1) * lineHeight) / 2;
+    lines.forEach(function (l, i) { ctx.fillText(l.trim(), x, startY + i * lineHeight); });
+  }
+
+  // ── Event wiring ────────────────────────────────────────
+  function setMode(mode) {
+    state.mode = mode;
+    localStorage.setItem(CONFIG.modeKey, mode);
+    el.btnLive.classList.toggle('active', mode === 'live');
+    el.btnTest.classList.toggle('active', mode === 'test');
+    fetchData();
+  }
+
+  el.btnLive.addEventListener('click', function () { setMode('live'); });
+  el.btnTest.addEventListener('click', function () { setMode('test'); });
+  el.btnRefresh.addEventListener('click', function () { fetchData(true); });
+  el.btnRecompute.addEventListener('click', computeRecap);
+  el.recapSince.addEventListener('change', computeRecap);
+  el.btnCopyRecap.addEventListener('click', copyRecapText);
+  el.btnDownloadGraphic.addEventListener('click', downloadRecapGraphic);
+
+  document.querySelectorAll('thead th').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.dataset.key;
+      if (state.sortKey === key) {
+        state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortKey = key;
+        state.sortDir = 'desc';
+      }
+      render();
+    });
+  });
+
+  // ── Init ────────────────────────────────────────────────
+  el.btnLive.classList.toggle('active', state.mode === 'live');
+  el.btnTest.classList.toggle('active', state.mode === 'test');
+
+  fetchData();
+  state.pollTimer = setInterval(fetchData, CONFIG.pollMs);
+  resetCountdown();
+  state.countdownTimer = setInterval(function () {
+    state.countdownSec = Math.max(0, state.countdownSec - 1);
+    var m = Math.floor(state.countdownSec / 60), s = state.countdownSec % 60;
+    el.countdown.textContent = 'Next refresh in ' + m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
+
+})();
+</script>
+</body>
+</html>

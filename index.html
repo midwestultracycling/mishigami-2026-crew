@@ -127,11 +127,13 @@
   .card.primary::before   { background: var(--blue); }
   .card.secondary::before { background: var(--maroon); }
   .card.tertiary::before  { background: var(--amber); }
+  .card.quad::before      { background: var(--cream); }
 
   .card:hover { border-color: var(--border-2); background: var(--navy-3); }
   .card.primary:hover   { border-color: var(--blue); }
   .card.secondary:hover { border-color: var(--maroon); }
   .card.tertiary:hover  { border-color: var(--amber); }
+  .card.quad:hover      { border-color: var(--cream); }
   .card:hover::before   { opacity: 1; }
 
   .card-icon {
@@ -184,6 +186,7 @@
   .card.primary:hover .card-arrow   { color: var(--blue);   transform: translateX(3px); }
   .card.secondary:hover .card-arrow { color: var(--maroon); transform: translateX(3px); }
   .card.tertiary:hover .card-arrow  { color: var(--amber);  transform: translateX(3px); }
+  .card.quad:hover .card-arrow      { color: var(--cream);  transform: translateX(3px); }
 
   /* ── Quick links ── */
   .quick-grid {
@@ -302,6 +305,26 @@
 
   <div class="section-label">Tools</div>
   <div class="grid">
+
+    <a class="card quad" href="race-dashboard/index.html">
+      <!-- Radar / live pulse icon -->
+      <svg class="card-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="3" fill="#FFFBF8"/>
+        <circle cx="16" cy="16" r="8" stroke="#FFFBF8" stroke-width="1.5" stroke-opacity="0.6"/>
+        <circle cx="16" cy="16" r="13" stroke="#FFFBF8" stroke-width="1.5" stroke-opacity="0.3"/>
+      </svg>
+      <div class="card-title">Race Dashboard</div>
+      <div class="card-desc">
+        Live field status pulled straight from the FMC tracking feed. Overnight recap highlights, stalled-rider flags, and a ready-to-export recap graphic for the Social Field Kit.
+      </div>
+      <div class="card-tags">
+        <span class="tag tag-cream">Live feed</span>
+        <span class="tag tag-dim">5 min refresh</span>
+        <span class="tag tag-blue">Overnight recap</span>
+        <span class="tag tag-dim">Export PNG</span>
+      </div>
+      <span class="card-arrow">&#8594;</span>
+    </a>
 
     <a class="card primary" href="shot-planner/index.html">
       <!-- Map / pin icon -->
