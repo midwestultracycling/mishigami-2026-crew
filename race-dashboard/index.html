@@ -359,6 +359,15 @@
     </header>
 
     <div class="panel">
+      <div class="control-bar" style="margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--border);">
+        <span style="font-size:11px; color:var(--muted); letter-spacing:.5px; text-transform:uppercase;">Event</span>
+        <div class="mode-toggle" role="group" aria-label="Event filter">
+          <button class="mode-btn" id="btn-event-all" type="button">All</button>
+          <button class="mode-btn" id="btn-event-main" type="button">Main</button>
+          <button class="mode-btn" id="btn-event-mini" type="button">Mini</button>
+        </div>
+        <span class="status-line" id="unmatched-note" style="display:none;"></span>
+      </div>
       <div class="control-bar">
         <div class="mode-toggle" role="group" aria-label="Data source">
           <button class="mode-btn" id="btn-mode-live" type="button">Live Event</button>
@@ -447,12 +456,15 @@
     pollMs: 60 * 1000,            // client just re-reads the static files; server updates them every 5 min via GitHub Actions
     staleMinutes: 20,             // flag "active + not moving" riders idle longer than this
     modeKey: 'mishigami2026_dashboard_mode_v1',
+    eventFilterKey: 'mishigami2026_dashboard_event_v1',
     grandDepartUtc: '2026-07-11T11:00:00Z' // 6:00 AM CDT
   };
 
   // ── State ───────────────────────────────────────────────
   var state = {
     mode: localStorage.getItem(CONFIG.modeKey) || 'live',
+    eventFilter: localStorage.getItem(CONFIG.eventFilterKey) || 'all',
+    rosterMap: null,
     riders: [],
     history: [],
     generated: null,
@@ -467,6 +479,10 @@
   var el = {
     btnLive: document.getElementById('btn-mode-live'),
     btnTest: document.getElementById('btn-mode-test'),
+    btnEventAll: document.getElementById('btn-event-all'),
+    btnEventMain: document.getElementById('btn-event-main'),
+    btnEventMini: document.getElementById('btn-event-mini'),
+    unmatchedNote: document.getElementById('unmatched-note'),
     statusDot: document.getElementById('status-dot'),
     statusText: document.getElementById('status-text'),
     countdown: document.getElementById('countdown-text'),
@@ -516,6 +532,35 @@
   function fmtSpeed(s, unit) {
     if (s === null || s === undefined) return '—';
     return s.toFixed(1) + ' ' + (unit || 'mph');
+  }
+
+  function normalizeName(s) {
+    return String(s || '').toLowerCase().replace(/[.’']/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function buildRosterMap(roster) {
+    var map = {};
+    (roster.main || []).forEach(function (n) { map[normalizeName(n)] = 'main'; });
+    (roster.mini || []).forEach(function (n) { map[normalizeName(n)] = 'mini'; });
+    return map;
+  }
+
+  function filteredRiders() {
+    if (state.eventFilter === 'all' || !state.rosterMap) return state.riders;
+    var wanted = state.eventFilter;
+    return state.riders.filter(function (r) { return state.rosterMap[normalizeName(r.name)] === wanted; });
+  }
+
+  function updateUnmatchedNote() {
+    if (!state.rosterMap || !state.riders.length) { el.unmatchedNote.style.display = 'none'; return; }
+    var unmatched = state.riders.filter(function (r) { return !state.rosterMap[normalizeName(r.name)]; });
+    if (unmatched.length) {
+      el.unmatchedNote.style.display = 'inline';
+      el.unmatchedNote.title = unmatched.map(function (r) { return r.name; }).join(', ');
+      el.unmatchedNote.textContent = unmatched.length + ' rider' + (unmatched.length === 1 ? '' : 's') + ' not matched to Main/Mini (hover for names)';
+    } else {
+      el.unmatchedNote.style.display = 'none';
+    }
   }
 
   function showError(msg) {
@@ -571,14 +616,16 @@
     clearError();
 
     var paths = currentPaths();
+    var rosterPromise = state.rosterMap ? Promise.resolve(null) : fetchJson(CONFIG.dataDir + 'roster.json').catch(function () { return null; });
 
-    Promise.all([fetchJson(paths.latest), fetchJson(paths.history)])
+    Promise.all([fetchJson(paths.latest), fetchJson(paths.history), rosterPromise])
       .then(function (results) {
-        var latest = results[0], history = results[1];
+        var latest = results[0], history = results[1], roster = results[2];
         state.riders = latest.riders || [];
         state.units = latest.units || { distance: 'mi', speed: 'mph' };
         state.generated = latest.generated || null;
         state.history = Array.isArray(history) ? history : [];
+        if (roster) state.rosterMap = buildRosterMap(roster);
 
         if (state.mode === 'live' && state.riders.length === 0) {
           showInfo('<strong>No active riders yet.</strong> The live feed is connected but trackers haven\'t reported in — normal before Grand Depart. Switch to <strong>Test Data</strong> to preview the dashboard with a live event in the meantime.');
@@ -588,6 +635,7 @@
 
         var genLabel = state.generated ? new Date(state.generated).toLocaleTimeString() : new Date().toLocaleTimeString();
         setStatus(true, 'Data as of ' + genLabel);
+        updateUnmatchedNote();
         render();
         computeRecap();
         resetCountdown();
@@ -607,7 +655,7 @@
 
   // ── Render table ────────────────────────────────────────
   function sortedRiders() {
-    var arr = state.riders.slice();
+    var arr = filteredRiders().slice();
     var key = state.sortKey, dir = state.sortDir;
     arr.sort(function (a, b) {
       var av, bv;
@@ -629,12 +677,13 @@
 
   function render() {
     // stats
-    var total = state.riders.length;
-    var active = state.riders.filter(function (r) { return r.status === 'active'; });
+    var scoped = filteredRiders();
+    var total = scoped.length;
+    var active = scoped.filter(function (r) { return r.status === 'active'; });
     var moving = active.filter(function (r) { return r.moving; });
     var stopped = active.filter(function (r) { return !r.moving; });
-    var finished = state.riders.filter(function (r) { return r.status === 'finished'; });
-    var dnf = state.riders.filter(function (r) { return ['dnf', 'dns', 'dsq'].indexOf(r.status) !== -1; });
+    var finished = scoped.filter(function (r) { return r.status === 'finished'; });
+    var dnf = scoped.filter(function (r) { return ['dnf', 'dns', 'dsq'].indexOf(r.status) !== -1; });
 
     el.statTotal.textContent = total;
     el.statActive.textContent = active.length;
@@ -701,7 +750,7 @@
     }
 
     var unit = state.units || { distance: 'mi', speed: 'mph' };
-    var active = state.riders.filter(function (r) { return r.status === 'active'; });
+    var active = filteredRiders().filter(function (r) { return r.status === 'active'; });
 
     // deltas since snapshot
     var deltas = active.map(function (r) {
@@ -735,7 +784,8 @@
 
     var stoppedNow = active.filter(function (r) { return !r.moving; });
 
-    lastRecap = { biggestMover: biggestMover, leaderNow: leaderNow, leadChanged: leadChanged, tightest: tightest, stoppedNow: stoppedNow, unit: unit, sinceLabel: el.recapSince.options[el.recapSince.selectedIndex].text };
+    var eventLabels = { all: 'All Riders', main: 'Main Event', mini: 'Mini-Gami' };
+    lastRecap = { biggestMover: biggestMover, leaderNow: leaderNow, leadChanged: leadChanged, tightest: tightest, stoppedNow: stoppedNow, unit: unit, sinceLabel: el.recapSince.options[el.recapSince.selectedIndex].text, eventLabel: eventLabels[state.eventFilter] || 'All Riders' };
 
     // highlight cards
     var cards = [];
@@ -760,7 +810,7 @@
 
   function generateRecapText(r) {
     var lines = [];
-    lines.push('MISHIGAMI 2026 — RECAP (' + r.sinceLabel + ')');
+    lines.push('MISHIGAMI 2026 — ' + r.eventLabel.toUpperCase() + ' RECAP (' + r.sinceLabel + ')');
     lines.push('');
     if (r.biggestMover) {
       lines.push(r.biggestMover.rider.name + ' put down the most ground — ' + r.biggestMover.gained.toFixed(1) + ' ' + r.unit.distance + ' ' + r.sinceLabel.toLowerCase() + '.');
@@ -830,7 +880,7 @@
 
     ctx.fillStyle = '#F49A0B';
     ctx.font = 'bold 40px "Arial Narrow", Arial, sans-serif';
-    ctx.fillText('OVERNIGHT RECAP', W / 2, 265);
+    ctx.fillText((lastRecap.eventLabel || 'ALL RIDERS').toUpperCase() + ' RECAP', W / 2, 265);
 
     ctx.fillStyle = '#7899b0';
     ctx.font = '26px "Arial Narrow", Arial, sans-serif';
@@ -902,6 +952,20 @@
     fetchData();
   }
 
+  function setEventFilter(filter) {
+    state.eventFilter = filter;
+    localStorage.setItem(CONFIG.eventFilterKey, filter);
+    el.btnEventAll.classList.toggle('active', filter === 'all');
+    el.btnEventMain.classList.toggle('active', filter === 'main');
+    el.btnEventMini.classList.toggle('active', filter === 'mini');
+    render();
+    computeRecap();
+  }
+
+  el.btnEventAll.addEventListener('click', function () { setEventFilter('all'); });
+  el.btnEventMain.addEventListener('click', function () { setEventFilter('main'); });
+  el.btnEventMini.addEventListener('click', function () { setEventFilter('mini'); });
+
   el.btnLive.addEventListener('click', function () { setMode('live'); });
   el.btnTest.addEventListener('click', function () { setMode('test'); });
   el.btnRefresh.addEventListener('click', function () { fetchData(true); });
@@ -926,6 +990,9 @@
   // ── Init ────────────────────────────────────────────────
   el.btnLive.classList.toggle('active', state.mode === 'live');
   el.btnTest.classList.toggle('active', state.mode === 'test');
+  el.btnEventAll.classList.toggle('active', state.eventFilter === 'all');
+  el.btnEventMain.classList.toggle('active', state.eventFilter === 'main');
+  el.btnEventMini.classList.toggle('active', state.eventFilter === 'mini');
 
   fetchData();
   state.pollTimer = setInterval(fetchData, CONFIG.pollMs);
