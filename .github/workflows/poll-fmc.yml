@@ -1,0 +1,48 @@
+name: Poll FMC Tracking Feed
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: poll-fmc
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch live event feed
+        run: |
+          curl -sS --fail --max-time 20 \
+            "https://www.followmychallenge.com/live/mishigamichallenge2026/api/midwestultracycling/?key=${{ secrets.FMC_API_KEY }}" \
+            -o /tmp/live.json
+
+      - name: Fetch test event feed
+        run: |
+          curl -sS --fail --max-time 20 \
+            "https://www.followmychallenge.com/live/bright-midnight-2026/api/midwestultracycling/?key=${{ secrets.FMC_API_KEY }}" \
+            -o /tmp/test.json
+
+      - name: Update live data files
+        run: |
+          python3 race-dashboard/scripts/update_data.py live race-dashboard/data < /tmp/live.json
+
+      - name: Update test data files
+        run: |
+          python3 race-dashboard/scripts/update_data.py test race-dashboard/data < /tmp/test.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "fmc-poll-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add race-dashboard/data
+          git diff --cached --quiet || git commit -m "Update race feed data"
+          git push

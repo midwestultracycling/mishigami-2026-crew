@@ -430,10 +430,8 @@
     </div>
 
     <p class="footer-note">
-      Polls the FMC feed every 5 minutes. History is stored locally in this browser —<br>
-      switching devices starts a fresh recap baseline. If the feed stops responding (network<br>
-      or 403 errors), it may be Cloudflare bot protection on FMC's end — send Tedde the polling<br>
-      device's IP for whitelisting.
+      Data syncs automatically every 5 minutes via a scheduled job — same data on<br>
+      every device, no need to keep this page open. Refresh anytime for the latest.
     </p>
 
   </div>
@@ -445,14 +443,10 @@
 
   // ── Config ──────────────────────────────────────────────
   var CONFIG = {
-    liveUrl: 'https://www.followmychallenge.com/live/mishigamichallenge2026/api/midwestultracycling/?key=yozfDT0rytvkGQfQEuJMqOFrbrLlr6yI',
-    testUrl: 'https://www.followmychallenge.com/live/bright-midnight-2026/api/midwestultracycling/?key=yozfDT0rytvkGQfQEuJMqOFrbrLlr6yI',
-    pollMs: 5 * 60 * 1000,       // 5 minutes, per Tedde's guidance
+    dataDir: './data/',
+    pollMs: 60 * 1000,            // client just re-reads the static files; server updates them every 5 min via GitHub Actions
     staleMinutes: 20,             // flag "active + not moving" riders idle longer than this
-    historyKey: 'mishigami2026_dashboard_history_v1',
     modeKey: 'mishigami2026_dashboard_mode_v1',
-    historyMaxHours: 96,
-    minSnapshotGapMin: 4,
     grandDepartUtc: '2026-07-11T11:00:00Z' // 6:00 AM CDT
   };
 
@@ -460,6 +454,7 @@
   var state = {
     mode: localStorage.getItem(CONFIG.modeKey) || 'live',
     riders: [],
+    history: [],
     generated: null,
     sortKey: 'distance',
     sortDir: 'desc',
@@ -534,36 +529,12 @@
   }
   function clearInfo() { el.infoBanner.classList.remove('show'); el.infoBanner.innerHTML = ''; }
 
-  // ── History (localStorage) ─────────────────────────────
-  function loadHistory() {
-    try {
-      var raw = localStorage.getItem(CONFIG.historyKey);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
-  }
-
-  function saveSnapshot(data) {
-    var history = loadHistory();
-    var t = nowUnix();
-    var last = history[history.length - 1];
-    if (last && (t - last.t) < CONFIG.minSnapshotGapMin * 60) return; // throttle
-
-    var ridersMap = {};
-    (data.riders || []).forEach(function (r) {
-      ridersMap[r.id] = { distance: r.distance || 0, name: r.name, startNumber: r.startNumber };
-    });
-    history.push({ t: t, riders: ridersMap });
-
-    var cutoff = t - CONFIG.historyMaxHours * 3600;
-    history = history.filter(function (h) { return h.t >= cutoff; });
-
-    try { localStorage.setItem(CONFIG.historyKey, JSON.stringify(history)); } catch (e) { /* storage full — ignore */ }
-  }
-
+  // ── History (server-provided) ──────────────────────────
+  // state.history comes straight from history[-test].json, written server-side by the
+  // GitHub Actions poller. No client-side storage — every device reads the same shared history.
   function getSnapshotNear(targetUnix) {
-    var history = loadHistory();
-    if (!history.length) return null;
-    // find the entry closest to (and at or before) targetUnix; fall back to the earliest available
+    var history = state.history;
+    if (!history || !history.length) return null;
     var best = null;
     for (var i = 0; i < history.length; i++) {
       if (history[i].t <= targetUnix) best = history[i];
@@ -572,8 +543,21 @@
   }
 
   // ── Fetch ───────────────────────────────────────────────
-  function currentUrl() {
-    return state.mode === 'test' ? CONFIG.testUrl : CONFIG.liveUrl;
+  // The browser never talks to FMC directly. A GitHub Actions workflow polls FMC every 5
+  // minutes and writes these static JSON files into the repo; every device just reads them.
+  function currentPaths() {
+    var suffix = state.mode === 'test' ? '-test' : '';
+    return {
+      latest: CONFIG.dataDir + 'latest' + suffix + '.json',
+      history: CONFIG.dataDir + 'history' + suffix + '.json'
+    };
+  }
+
+  function fetchJson(url) {
+    return fetch(url, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error(url + ' → HTTP ' + res.status);
+      return res.json();
+    });
   }
 
   function setStatus(ok, text) {
@@ -581,20 +565,20 @@
     el.statusText.textContent = text;
   }
 
-  function fetchData(isManual) {
+  function fetchData() {
     setStatus(null, 'Refreshing…');
     el.btnRefresh.disabled = true;
     clearError();
 
-    fetch(currentUrl(), { method: 'GET', mode: 'cors', credentials: 'omit' })
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function (data) {
-        state.riders = data.riders || [];
-        state.units = data.units || { distance: 'mi', speed: 'mph' };
-        state.generated = data.generated || new Date().toISOString();
+    var paths = currentPaths();
+
+    Promise.all([fetchJson(paths.latest), fetchJson(paths.history)])
+      .then(function (results) {
+        var latest = results[0], history = results[1];
+        state.riders = latest.riders || [];
+        state.units = latest.units || { distance: 'mi', speed: 'mph' };
+        state.generated = latest.generated || null;
+        state.history = Array.isArray(history) ? history : [];
 
         if (state.mode === 'live' && state.riders.length === 0) {
           showInfo('<strong>No active riders yet.</strong> The live feed is connected but trackers haven\'t reported in — normal before Grand Depart. Switch to <strong>Test Data</strong> to preview the dashboard with a live event in the meantime.');
@@ -602,15 +586,15 @@
           clearInfo();
         }
 
-        saveSnapshot(data);
-        setStatus(true, 'Updated ' + new Date().toLocaleTimeString());
+        var genLabel = state.generated ? new Date(state.generated).toLocaleTimeString() : new Date().toLocaleTimeString();
+        setStatus(true, 'Data as of ' + genLabel);
         render();
         computeRecap();
         resetCountdown();
       })
       .catch(function (err) {
-        setStatus(false, 'Fetch failed');
-        showError('<strong>Couldn\'t reach the tracking feed.</strong> (' + err.message + ') If this keeps happening, it may be Cloudflare bot protection on FMC\'s end — reply to the Tedde thread with this device\'s public IP (search "what is my ip") so it can be whitelisted. Otherwise, hit Refresh Now to retry.');
+        setStatus(false, 'Load failed');
+        showError('<strong>Couldn\'t load dashboard data.</strong> (' + err.message + ') This dashboard reads from files that update automatically every 5 minutes. If they\'ve never been generated yet, the first sync may still be pending.');
       })
       .finally(function () {
         el.btnRefresh.disabled = false;
@@ -706,11 +690,11 @@
   function computeRecap() {
     var since = el.recapSince.value;
     var targetUnix = targetUnixForSince(since);
-    var history = loadHistory();
+    var history = state.history;
     var snapshot = getSnapshotNear(targetUnix);
 
-    if (!snapshot || history.length < 2 || !state.riders.length) {
-      el.recapHighlights.innerHTML = '<div class="highlight-card"><div class="highlight-title">Not enough history</div><div class="highlight-body">Keep this dashboard open (or check back after a few polling cycles) to build up enough snapshots to compare against.</div></div>';
+    if (!snapshot || !history || history.length < 2 || !state.riders.length) {
+      el.recapHighlights.innerHTML = '<div class="highlight-card"><div class="highlight-title">Not enough history</div><div class="highlight-body">The scheduled sync needs a couple more cycles (about 10 minutes) before there\'s enough history to compare against.</div></div>';
       el.recapText.value = '';
       lastRecap = null;
       return;
