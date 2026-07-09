@@ -2,7 +2,8 @@ name: Poll FMC Tracking Feed
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    # Every 10 min, offset from :00/:10/:20... to avoid GitHub's peak-minute queue congestion
+    - cron: '7,17,27,37,47,57 * * * *'
   workflow_dispatch: {}
 
 permissions:
