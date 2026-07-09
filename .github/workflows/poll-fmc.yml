@@ -25,9 +25,10 @@ jobs:
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
             -H "Accept: application/json, text/plain, */*" \
             -H "Accept-Language: en-US,en;q=0.9" \
+            -H "X-Apikey: ${{ secrets.FMC_API_KEY }}" \
             -w "%{http_code}" \
             -o /tmp/live.json \
-            "https://www.followmychallenge.com/live/mishigamichallenge2026/api/midwestultracycling/?key=${{ secrets.FMC_API_KEY }}")
+            "https://www.followmychallenge.com/live/mishigamichallenge2026/api/midwestultracycling/")
           echo "HTTP status: $STATUS"
           if [ "$STATUS" -ge 400 ]; then
             echo "--- response body ---"
@@ -41,9 +42,10 @@ jobs:
             -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
             -H "Accept: application/json, text/plain, */*" \
             -H "Accept-Language: en-US,en;q=0.9" \
+            -H "X-Apikey: ${{ secrets.FMC_API_KEY }}" \
             -w "%{http_code}" \
             -o /tmp/test.json \
-            "https://www.followmychallenge.com/live/bright-midnight-2026/api/midwestultracycling/?key=${{ secrets.FMC_API_KEY }}")
+            "https://www.followmychallenge.com/live/bright-midnight-2026/api/midwestultracycling/")
           echo "HTTP status: $STATUS"
           if [ "$STATUS" -ge 400 ]; then
             echo "--- response body ---"
